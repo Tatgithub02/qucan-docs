@@ -1,0 +1,171 @@
+/* Qucan brand palette */
+:root {
+  --qucan-bg: #000314;        /* midnight blue background */
+  --qucan-bg-raised: #060a24; /* very slightly lighter, for header/tabs depth */
+  --qucan-accent: #0062ff;    /* vivid blue */
+  --qucan-accent-alt: #011558;
+  --qucan-grey: #a09fa3;
+  --md-text-font: "B612";
+  --md-code-font: "B612 Mono";
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: var(--qucan-bg);
+  --md-primary-fg-color--light: var(--qucan-bg);
+  --md-primary-fg-color--dark: var(--qucan-bg);
+  --md-primary-bg-color: #ffffff;
+
+  --md-accent-fg-color: var(--qucan-accent);
+  --md-accent-fg-color--transparent: rgba(0, 98, 255, 0.1);
+  --md-accent-bg-color: #ffffff;
+
+  --md-default-bg-color: var(--qucan-bg);
+  --md-default-fg-color: #ffffff;
+  --md-default-fg-color--light: var(--qucan-grey);
+  --md-default-fg-color--lighter: var(--qucan-grey);
+
+  --md-typeset-a-color: var(--qucan-accent);
+}
+
+/* Header: dark like the real Qucan app, with a slim brand-color top edge
+   instead of a full bright-blue wash */
+.md-header {
+  background-color: var(--qucan-bg-raised);
+  border-top: 3px solid var(--qucan-accent);
+  box-shadow: none;
+}
+
+.md-tabs {
+  background-color: var(--qucan-bg-raised);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Keep the navigation tabs left aligned */
+.md-tabs__list {
+  padding-left: 0;
+}
+
+/* Nav tabs: white titles, with the underline marking the active one */
+.md-tabs__link {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.md-tabs__link:hover,
+.md-tabs__link--active {
+  color: #ffffff;
+}
+
+.md-tabs__item--active .md-tabs__link {
+  color: #ffffff;
+  box-shadow: inset 0 -2px 0 #ffffff;
+}
+
+/* Search box: subtle, not a bright block */
+.md-search__input {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.md-search__input:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Keep sidebar/content on midnight blue */
+.md-sidebar,
+.md-main,
+.md-content {
+  background-color: var(--qucan-bg);
+}
+
+.md-typeset a,
+.md-path__link,
+.md-nav__link:focus,
+.md-nav__link:hover {
+  color: var(--qucan-accent);
+}
+
+.md-nav__link--active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Larger header logo */
+.md-header__button.md-logo {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-right: 0.2rem;
+  transform: translateY(-4px);
+}
+
+.md-header__button.md-logo img {
+  height: 64px;
+  width: auto;
+}
+
+/* Bring the site title closer to the logo, and keep it white */
+.md-header__title {
+  margin-left: 0.3rem;
+  color: #ffffff;
+}
+
+/* Headings default to a muted grey in Material; make them white like the rest of the brand */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  color: #ffffff;
+}
+
+/* Preserve screenshot proportions instead of stretching them */
+.md-typeset img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Portrait screenshots sit beside their related text on larger screens */
+.md-typeset img.doc-image--portrait {
+  float: right;
+  margin: 0 0 1.25rem 1.5rem;
+  max-height: 34rem;
+  width: min(38%, 22rem);
+}
+
+.doc-image-end {
+  clear: both;
+}
+
+/* Compact screenshots: keep them from stretching across the full text column */
+.md-typeset img.doc-image--compact {
+  width: min(65%, 30rem);
+  margin: 0 auto 1.25rem;
+}
+
+@media screen and (max-width: 44.984375em) {
+  .md-typeset img.doc-image--compact {
+    width: 85%;
+  }
+}
+
+@media screen and (max-width: 44.984375em) {
+  .md-typeset img.doc-image--portrait {
+    float: none;
+    margin: 1rem auto;
+    max-height: none;
+    width: auto;
+  }
+}
+
+/* Gate reference: the small tile image cropped from the real Operations catalog */
+.md-typeset img.gate-tile {
+  display: block;
+  width: 96px;
+  max-width: 96px;
+  height: auto;
+  margin: 0 auto 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+}

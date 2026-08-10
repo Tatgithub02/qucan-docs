@@ -1,0 +1,153 @@
+site_name: Documentation
+site_url: https://qucan.io/docs/
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.png
+  palette:
+    scheme: slate
+    primary: custom
+    accent: custom
+  font:
+    text: B612
+    code: B612 Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Qompile:
+      - Overview: qompile/index.md
+      - What is Qompile?: qompile/what-is-it.md
+      - What it can do: qompile/what-it-can-do.md
+      - Tour of Qompile:
+          - Overview: qompile/tour/overview.md
+          - Build with drag-and-drop:
+              - Operations:
+                  - Overview: qompile/tour/drag-drop/operations.md
+                  - Gate reference:
+                      - Overview: qompile/gates/index.md
+                      - Foundational gates:
+                          - Identity (I): qompile/gates/identity.md
+                          - Pauli-X / NOT: qompile/gates/pauli-x.md
+                          - Pauli-Y: qompile/gates/pauli-y.md
+                          - Pauli-Z: qompile/gates/pauli-z.md
+                          - Hadamard (H): qompile/gates/hadamard.md
+                      - Phase gates:
+                          - S: qompile/gates/s-gate.md
+                          - S†: qompile/gates/s-dagger.md
+                          - T: qompile/gates/t-gate.md
+                          - T†: qompile/gates/t-dagger.md
+                          - P: qompile/gates/p-gate.md
+                          - RZ: qompile/gates/rz-gate.md
+                      - Rotation gates:
+                          - RX: qompile/gates/rx-gate.md
+                          - RY: qompile/gates/ry-gate.md
+                          - √X: qompile/gates/sqrt-x.md
+                          - √X†: qompile/gates/sqrt-x-dagger.md
+                          - U: qompile/gates/u-gate.md
+                      - Multi-qubit and controlled gates:
+                          - CNOT: qompile/gates/cnot.md
+                          - Toffoli: qompile/gates/toffoli.md
+                          - SWAP: qompile/gates/swap.md
+                          - RXX: qompile/gates/rxx-gate.md
+                          - RZZ: qompile/gates/rzz-gate.md
+                          - RCCX: qompile/gates/rccx.md
+                          - RC3X: qompile/gates/rc3x.md
+                      - Measurement and control flow:
+                          - Controls and conditionals: qompile/gates/controls-and-conditionals.md
+                          - Measurement: qompile/gates/measurement.md
+                          - Reset: qompile/gates/reset.md
+                          - Barrier: qompile/gates/barrier.md
+                          - Control: qompile/gates/control.md
+                          - Conditional (if): qompile/gates/conditional.md
+                          - Phase disk marker: qompile/gates/phase-disk-marker.md
+              - Circuit: qompile/tour/drag-drop/circuit.md
+          - Build with code:
+              - OpenQASM: qompile/tour/code/openqasm.md
+              - Qiskit: qompile/tour/code/qiskit.md
+              - Cirq: qompile/tour/code/cirq.md
+              - Q#: qompile/tour/code/qsharp.md
+          - Visualizations:
+              - Overview: qompile/tour/visualizations/overview.md
+              - Phase disks: qompile/tour/visualizations/phase-disks.md
+              - Probabilities: qompile/tour/visualizations/probabilities.md
+              - Q-Sphere: qompile/tour/visualizations/q-sphere.md
+              - Statevector: qompile/tour/visualizations/statevector.md
+              - Managing windows: qompile/tour/visualizations/windows.md
+          - Run circuits and view results: qompile/tour/run-results.md
+          - Customizing your circuit: qompile/tour/customizing.md
+      - Ready algorithms:
+          - Overview: qompile/algorithms/overview.md
+          - Bell states: qompile/algorithms/bell-states.md
+          - Superdense coding: qompile/algorithms/superdense-coding.md
+          - Quantum teleportation: qompile/algorithms/teleportation.md
+          - Deutsch-Jozsa: qompile/algorithms/deutsch-jozsa.md
+          - Bernstein-Vazirani: qompile/algorithms/bernstein-vazirani.md
+          - Simon's: qompile/algorithms/simons.md
+          - Grover's: qompile/algorithms/grovers.md
+          - QAOA: qompile/algorithms/qaoa.md
+          - QPE: qompile/algorithms/qpe.md
+          - Shor's: qompile/algorithms/shors.md
+          - VQE: qompile/algorithms/vqe.md
+      - Help: qompile/help.md
+  - Dashboard: dashboard/index.md
+  - QCAP:
+      - Overview: qcap/index.md
+      - What is QCAP?: qcap/what-is-it.md
+      - Tour of QCAP:
+          - Overview: qcap/tour/overview.md
+          - Modules: qcap/tour/modules.md
+          - Live Sessions: qcap/tour/live-sessions.md
+          - Grades: qcap/tour/grades.md
+          - Announcements: qcap/tour/announcements.md
+          - Discussions Forum: qcap/tour/discussions.md
+          - Classmates: qcap/tour/classmates.md
+          - Resources: qcap/tour/resources.md
+  - Qanvas:
+      - Overview: qanvas/index.md
+      - What is Qanvas?: qanvas/what-is-it.md
+      - Tour of Qanvas:
+          - Overview: qanvas/tour/overview.md
+          - Tools panel: qanvas/tour/tools.md
+          - Ready circuits: qanvas/tour/ready-circuits.md
+          - Text: qanvas/tour/text-tool.md
+          - Shapes: qanvas/tour/shapes-tool.md
+          - Quiz: qanvas/tour/quiz-tool.md
+          - Upload blocks: qanvas/tour/upload-blocks.md
+          - Operations: qanvas/tour/operations-block.md
+          - Circuit: qanvas/tour/circuit-block.md
+          - Coding: qanvas/tour/coding-block.md
+          - Bloch sphere: qanvas/tour/bloch-sphere-block.md
+          - Q-Sphere: qanvas/tour/q-sphere-block.md
+          - Results: qanvas/tour/results-block.md
+          - Assets: qanvas/tour/assets.md
+          - Customizing your workspace: qanvas/tour/customizing.md
+      - Help: qanvas/help.md
+  - Sqope:
+      - Overview: sqope/index.md
+      - What is Sqope?: sqope/what-is-it.md
+      - Tour of Sqope: sqope/tour/overview.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      permalink: true
