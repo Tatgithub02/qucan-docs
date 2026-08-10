@@ -1,5 +1,5 @@
 site_name: Documentation
-site_url: https://qucan.io/docs/
+site_url: https://docs.qucan.io/
 theme:
   name: material
   logo: assets/logo.svg
@@ -27,6 +27,40 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Dashboard: dashboard/index.md
+  - QCAP:
+      - Overview: qcap/index.md
+      - What is QCAP?: qcap/what-is-it.md
+      - Tour of QCAP:
+          - Overview: qcap/tour/overview.md
+          - Modules: qcap/tour/modules.md
+          - Live Sessions: qcap/tour/live-sessions.md
+          - Grades: qcap/tour/grades.md
+          - Announcements: qcap/tour/announcements.md
+          - Discussions Forum: qcap/tour/discussions.md
+          - Classmates: qcap/tour/classmates.md
+          - Resources: qcap/tour/resources.md
+          - Certificate: qcap/tour/certificate.md
+  - Qanvas:
+      - Overview: qanvas/index.md
+      - What is Qanvas?: qanvas/what-is-it.md
+      - Tour of Qanvas:
+          - Overview: qanvas/tour/overview.md
+          - Tools panel: qanvas/tour/tools.md
+          - Ready circuits: qanvas/tour/ready-circuits.md
+          - Text: qanvas/tour/text-tool.md
+          - Shapes: qanvas/tour/shapes-tool.md
+          - Quiz: qanvas/tour/quiz-tool.md
+          - Upload blocks: qanvas/tour/upload-blocks.md
+          - Operations: qanvas/tour/operations-block.md
+          - Circuit: qanvas/tour/circuit-block.md
+          - Coding: qanvas/tour/coding-block.md
+          - Bloch sphere: qanvas/tour/bloch-sphere-block.md
+          - Q-Sphere: qanvas/tour/q-sphere-block.md
+          - Results: qanvas/tour/results-block.md
+          - Assets: qanvas/tour/assets.md
+          - Customizing your workspace: qanvas/tour/customizing.md
+      - Help: qanvas/help.md
   - Qompile:
       - Overview: qompile/index.md
       - What is Qompile?: qompile/what-is-it.md
@@ -102,39 +136,6 @@ nav:
           - Shor's: qompile/algorithms/shors.md
           - VQE: qompile/algorithms/vqe.md
       - Help: qompile/help.md
-  - Dashboard: dashboard/index.md
-  - QCAP:
-      - Overview: qcap/index.md
-      - What is QCAP?: qcap/what-is-it.md
-      - Tour of QCAP:
-          - Overview: qcap/tour/overview.md
-          - Modules: qcap/tour/modules.md
-          - Live Sessions: qcap/tour/live-sessions.md
-          - Grades: qcap/tour/grades.md
-          - Announcements: qcap/tour/announcements.md
-          - Discussions Forum: qcap/tour/discussions.md
-          - Classmates: qcap/tour/classmates.md
-          - Resources: qcap/tour/resources.md
-  - Qanvas:
-      - Overview: qanvas/index.md
-      - What is Qanvas?: qanvas/what-is-it.md
-      - Tour of Qanvas:
-          - Overview: qanvas/tour/overview.md
-          - Tools panel: qanvas/tour/tools.md
-          - Ready circuits: qanvas/tour/ready-circuits.md
-          - Text: qanvas/tour/text-tool.md
-          - Shapes: qanvas/tour/shapes-tool.md
-          - Quiz: qanvas/tour/quiz-tool.md
-          - Upload blocks: qanvas/tour/upload-blocks.md
-          - Operations: qanvas/tour/operations-block.md
-          - Circuit: qanvas/tour/circuit-block.md
-          - Coding: qanvas/tour/coding-block.md
-          - Bloch sphere: qanvas/tour/bloch-sphere-block.md
-          - Q-Sphere: qanvas/tour/q-sphere-block.md
-          - Results: qanvas/tour/results-block.md
-          - Assets: qanvas/tour/assets.md
-          - Customizing your workspace: qanvas/tour/customizing.md
-      - Help: qanvas/help.md
   - Sqope:
       - Overview: sqope/index.md
       - What is Sqope?: sqope/what-is-it.md

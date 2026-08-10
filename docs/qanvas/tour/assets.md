@@ -11,7 +11,7 @@ Two buttons sit at the top of the panel:
 - **Save file** - saves the current workspace (same action as [Save file in the top bar](customizing.md))
 - **Upload** - opens a file picker to bring a file in, the same as dragging one onto the canvas
 
-Below them, you can also **drop files directly** onto the panel. The supported types are listed right there: `.qanvas`, images, PDF, `.py`, `.qasm`/`.qasm3`, and `.ipynb` (Jupyter notebooks).
+Below them, you can also **drop files directly** onto the panel. The supported types are listed right there: `.qanvas`, images, PDF, `.py`, and `.qasm`/`.qasm3`.
 
 <div class="doc-image-end"></div>
 
@@ -21,4 +21,4 @@ This lists other **.qanvas workspace files** you've saved, each with when it was
 
 ## Other files
 
-This lists standalone files you've uploaded into **this** workspace, images, PDFs, Python scripts, OpenQASM files, and notebooks, so you can drag one onto the canvas again (as an [Upload block](upload-blocks.md)) without re-uploading it. It starts out empty, "No uploaded files yet", until you upload or drop something.
+This lists standalone files you've uploaded into **this** workspace, images, PDFs, Python scripts, and OpenQASM files, so you can drag one onto the canvas again (as an [Upload block](upload-blocks.md)) without re-uploading it. It starts out empty, "No uploaded files yet", until you upload or drop something.

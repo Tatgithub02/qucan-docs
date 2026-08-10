@@ -4,13 +4,17 @@ The **Bloch sphere** block (found under [Quantum](tools.md#quantum) in the Tools
 
 ## Picking a qubit
 
-A circuit usually has more than one qubit, so tabs across the top let you switch which qubit's reduced state the sphere is showing, here **q[1]**:
+A circuit usually has more than one qubit, so tabs across the top let you switch which qubit's reduced state the sphere is showing. Here's a 3-qubit **Alpha** circuit, first with **q[0]** selected:
 
-![Bloch sphere block showing q[1], with an info tooltip explaining the view](../images/quantum/bloch-sphere-q1.png)
+![Bloch sphere block for circuit Alpha, showing q[0] as an equal superposition](../images/quantum/bloch-sphere-q0.png)
 
-...and here **q[0]** on the same circuit:
+Its point sits on the equator, halfway between \( |0\rangle \) and \( |1\rangle \), matching the equation underneath: \( |\psi\rangle = \sqrt{0.5}\,|0\rangle + \sqrt{0.5}\,|1\rangle \), an equal superposition.
 
-![Bloch sphere block showing q[0]](../images/quantum/bloch-sphere-q0.png)
+...and here's the same circuit with **q[1]** selected instead:
+
+![Bloch sphere block for circuit Alpha, showing q[1] resting at the north pole](../images/quantum/bloch-sphere-q1.png)
+
+This qubit's vector points straight up to \( |0\rangle \), matching \( |\psi\rangle = 1\,|0\rangle + 0\,|1\rangle \), a definite state with no superposition.
 
 !!! note
     The exact numbers shown above are just illustrations of the UI, not a worked example, don't read them as a specific claim about what any particular circuit produces.

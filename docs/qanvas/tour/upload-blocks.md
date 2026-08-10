@@ -1,6 +1,6 @@
 # Upload blocks
 
-Four block types under [Upload](tools.md#upload) bring outside files onto the canvas: **Image**, **PDF**, **Python**, and **OpenQASM**. Each starts as an empty placeholder you drop a file onto (or, for Python and OpenQASM, write directly), and can be expanded to a fullscreen view.
+Four block types under [Upload](tools.md#upload) bring outside files onto the canvas: **Image**, **PDF**, **Python**, and **OpenQASM**. Each starts as an empty drop zone you drop a file onto (or, for Python and OpenQASM, write directly), and can be expanded to a fullscreen view.
 
 ## Image
 

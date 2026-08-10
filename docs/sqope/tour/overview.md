@@ -19,4 +19,4 @@ Pagination controls (`< 1 2 3 >`) sit below the feed to page through older artic
 Alongside the feed, a **Most read this month** panel ranks the top articles by readership, each entry links straight to that article.
 
 !!! note
-    The specific article titles used in examples elsewhere are just placeholders to illustrate the card layout, not real Sqope content or a claim about what's actually published.
+    The specific article titles used in examples elsewhere are just stand-ins to illustrate the card layout, not real Sqope content or a claim about what's actually published.

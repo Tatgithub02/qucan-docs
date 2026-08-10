@@ -2,7 +2,7 @@
 
 ![Identity gate tile from the Operations catalog](../images/gates/identity.png){ .gate-tile }
 
-The **identity gate** does nothing to the qubit's state. It exists so a wire can have an explicit, visible placeholder operation - for example to pad a circuit's timing/layout - without changing what the qubit represents.
+The **identity gate** does nothing to the qubit's state. It exists so a wire can have an explicit, visible gate - for example to pad a circuit's timing/layout - without changing what the qubit represents.
 
 | | |
 |---|---|

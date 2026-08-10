@@ -15,10 +15,10 @@ Every module in the [sidebar](overview.md#sidebar) opens to the same kind of pag
 
 ## Most other modules: coming soon
 
-The rest of the module list, **Foundations**, **Math**, **Core**, **Python**, **Mechanics**, **Protocols**, **Qiskit**, **Algorithms**, **Hardware**, **QEC**, **Applications**, **Future**, currently shows a placeholder version of the same page anatomy instead of finished lessons:
+The rest of the module list, **Foundations**, **Math**, **Core**, **Python**, **Mechanics**, **Protocols**, **Qiskit**, **Algorithms**, **Hardware**, **QEC**, **Applications**, **Future**, currently shows a shorter introductory version of the same page layout while the full lessons are being added:
 
 - A banner: *"Detailed content for `<module>` is coming soon. This module is part of the QCAP track and will be available shortly."*
-- The same three generic learning objectives on every placeholder module: build foundational intuition for it, connect it to the broader QCAP curriculum, and prepare for hands-on practice in upcoming modules
+- The same three general learning objectives on every one of these modules: build foundational intuition for it, connect it to the broader QCAP curriculum, and prepare for hands-on practice in upcoming modules
 - A single **Part 1 - Overview**, with one reading, `Introduction to <module>` (8 min), and sometimes a quiz (**Math**'s Part 1 also has a `Quiz: Math` item, **Foundations**' doesn't)
 
-So progress on a placeholder module reads as `0m of videos left`, `8m of readings left`, and either `0 quizzes left` or `1 quiz left` depending on whether that module has its quiz yet.
+So progress on one of these modules reads as `0m of videos left`, `8m of readings left`, and either `0 quizzes left` or `1 quiz left` depending on whether that module has its quiz yet.

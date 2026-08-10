@@ -21,4 +21,4 @@ Selecting a module shows its page, description, learning objectives, progress, a
 
 ## Progress panel
 
-To the right, **Track your progress** summarizes your standing across the whole track: an overall completion percentage, how many of the 13 modules you've finished, and your average grade. Below it, a **Certificate** card stays locked (shown blurred) until you complete every module with an average grade of 70% or higher.
+To the right, **Track your progress** summarizes your standing across the whole track: an overall completion percentage, how many of the 13 modules you've finished, and your average grade. Below it, a **Certificate** card stays locked (shown blurred) until you complete every module with an average grade of 70% or higher, see [Certificate](certificate.md).
