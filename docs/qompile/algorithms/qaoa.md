@@ -1,1 +1,110 @@
-# qaoa
+# QAOA
+
+The **Quantum Approximate Optimization Algorithm** attacks combinatorial optimization problems - scheduling, routing, portfolio selection, network partitioning - by teaming a small, shallow quantum circuit with an ordinary classical optimizer. It's one of the flagship algorithms for today's noisy, limited-qubit hardware, because the circuit stays short and the classical computer does the heavy lifting of tuning it.
+
+## Why this exists
+
+Combinatorial optimization problems share a painful shape: an enormous number of candidate solutions (bitstrings), a score for each one, and no better classical strategy in general than clever variations on "try lots of them." Many of these problems are NP-hard, and nobody expects any computer, quantum or classical, to solve them exactly and efficiently.
+
+QAOA aims for something more modest and more practical: **good solutions, fast**. It prepares a quantum state that concentrates probability on high-scoring bitstrings, so that measuring it gives you very good candidates with high likelihood. The state is prepared by a circuit with a handful of tunable knobs, and a classical optimizer turns those knobs to make the measured scores as good as possible.
+
+The standard showcase problem, used on this page, is **MaxCut**: given a network of nodes and edges, split the nodes into two groups so that as many edges as possible run *between* the groups.
+
+## What you need to know first
+
+- **Cost functions.** Every optimization problem gets encoded as a function \( C(z) \) that scores each bitstring \( z \). For MaxCut: assign each node a bit (which group it's in), and \( C(z) \) counts the edges whose endpoints got different bits.
+- **Cost Hamiltonians.** A **Hamiltonian** is an operator whose role here is simple: it's the quantum version of the score sheet. Encode the cost so that each basis state \( |z\rangle \) is scored by \( C(z) \). The useful building block is the observation that \( Z_i Z_j \) (a [Pauli-Z](../gates/pauli-z.md) on qubits \( i \) and \( j \)) gives \( +1 \) when bits \( i \) and \( j \) agree and \( -1 \) when they differ - a one-term "is this edge cut?" detector. ([VQE](vqe.md) discusses Hamiltonians and expectation values in more depth.)
+- **Expectation values.** \( \langle C \rangle \) is just the *average score* of the bitstrings you'd get by measuring the state many times. That's the number the classical optimizer tries to push up, and it's estimated directly from measurement counts.
+- **A classical optimizer.** Anything that minimizes a function of a few real variables - even a grid search works for the two-parameter version here.
+
+## How it works, step by step
+
+The circuit has \( p \) layers (the "depth"); each layer has two knobs, an angle \( \gamma \) for the cost step and \( \beta \) for the mixer step. This page uses \( p = 1 \): two knobs total.
+
+1. **Superpose:** H on every qubit - every possible grouping of the nodes, all at once, equally weighted.
+2. **Cost layer (knob \( \gamma \)):** for each edge \( (i, j) \), apply [RZZ](../gates/rzz-gate.md)\( (2\gamma) \) between qubits \( i \) and \( j \). This stamps each bitstring-branch with a phase proportional to its score - good cuts and bad cuts start to spin apart in phase.
+3. **Mixer layer (knob \( \beta \)):** [RX](../gates/rx-gate.md)\( (2\beta) \) on every qubit. Phases alone are invisible to measurement (a lesson from [Grover's](grovers.md)); the mixer converts the phase differences into amplitude differences, letting branches interfere so that high-scoring strings become more likely.
+4. **Measure** all qubits, many shots, and compute the average cut value of the results.
+5. **Classical loop:** an ordinary optimizer adjusts \( (\gamma, \beta) \) to maximize that average, re-running the circuit each try. When it converges, sample once more and keep the best bitstring seen.
+
+Deeper circuits (\( p = 2, 3, \ldots \)) alternate more cost and mixer layers with their own knobs, approximating the ideal annealing process better at the price of a longer circuit.
+
+## The math
+
+For MaxCut the cost function is
+
+\[ C(z) = \sum_{(i,j) \in E} \frac{1 - z_i z_j}{2}, \qquad z_i \in \{+1, -1\} \]
+
+using the \( \pm1 \) convention for bits (node in group A = \( +1 \), group B = \( -1 \)): each edge term is 1 when the endpoints differ, 0 when they agree. Promote each \( z_i \) to the operator \( Z_i \) and this becomes the cost Hamiltonian \( C \to H_C \). The QAOA state with one layer is
+
+\[ |\gamma, \beta\rangle = e^{-i\beta H_M}\, e^{-i\gamma H_C}\, H^{\otimes n} |0\ldots0\rangle \]
+
+where \( H_M = \sum_i X_i \) is the mixer. The exponentials sound abstract but compile to plain gates: each edge's \( e^{-i\gamma Z_i Z_j} \) is exactly one RZZ\( (2\gamma) \) gate, and each \( e^{-i\beta X_i} \) is one RX\( (2\beta) \). The classical optimizer maximizes \( \langle \gamma, \beta | H_C | \gamma, \beta \rangle \), which is estimated by averaging \( C \) over measurement outcomes - no operator algebra needed at runtime.
+
+## A worked example
+
+Use the smallest interesting graph: a **triangle** - nodes 0, 1, 2, edges (0,1), (1,2), (0,2). Enumerate the eight groupings: `000` and `111` keep all nodes together (cut value 0); every other bitstring isolates one node and cuts 2 of the 3 edges (cut value 2, the maximum - you can never cut all 3 edges of a triangle, since some pair must land in the same group).
+
+So the optimizer's job is to make the six value-2 strings likely and `000`/`111` rare. Run the \( p = 1 \) circuit and you'll find the average cut peaks around \( \gamma \approx 0.79, \beta \approx 0.39 \) (about \( \pi/4 \) and \( \pi/8 \)), where \( \langle C \rangle \approx 1.5 \) and the two worthless strings have visibly suppressed probability. Measuring then gives a maximum cut with high probability - and *any* of the six is a correct answer.
+
+## The circuit
+
+For the triangle at fixed \( (\gamma, \beta) = (0.79, 0.39) \), build on 3 qubits (or load QAOA from the [Ready algorithms](../tour/drag-drop/operations.md#switching-to-ready-algorithms) panel):
+
+1. H on `q[0]`, `q[1]`, `q[2]`
+2. **Cost layer:** RZZ(1.58) on the pair (`q[0]`, `q[1]`), then (`q[1]`, `q[2]`), then (`q[0]`, `q[2]`) - one per edge, angle \( 2\gamma \)
+3. **Mixer layer:** RX(0.78) on each of the three qubits - angle \( 2\beta \)
+4. [Measure](../gates/measurement.md) all three qubits
+
+In Qompile you set the two angles by hand; the "classical loop" is you trying different values and watching the average improve, which is a genuinely good way to feel what the optimizer does.
+
+References for the circuit layout: [Wikipedia: Quantum optimization algorithms](https://en.wikipedia.org/wiki/Quantum_optimization_algorithms) and [IBM Quantum Learning: Variational algorithm design](https://learning.quantum.ibm.com/course/variational-algorithm-design).
+
+## The Qiskit code
+
+```python
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+from scipy.optimize import minimize
+
+edges = [(0, 1), (1, 2), (0, 2)]      # the triangle
+n = 3
+sim = AerSimulator()
+
+def qaoa_circuit(gamma, beta):
+    qc = QuantumCircuit(n, n)
+    qc.h(range(n))                    # step 1: superpose
+    for i, j in edges:                # step 2: cost layer
+        qc.rzz(2 * gamma, i, j)
+    qc.rx(2 * beta, range(n))         # step 3: mixer layer
+    qc.measure(range(n), range(n))
+    return qc
+
+def cut_value(bits):
+    return sum(1 for i, j in edges if bits[i] != bits[j])
+
+def average_cut(params):
+    counts = sim.run(qaoa_circuit(*params), shots=2048).result().get_counts()
+    total = sum(cut_value(key[::-1]) * shots for key, shots in counts.items())
+    return -total / 2048              # negative: optimizers minimize
+
+result = minimize(average_cut, x0=[0.5, 0.5], method="COBYLA")
+print("best (gamma, beta):", result.x, " average cut:", -result.fun)
+
+counts = sim.run(qaoa_circuit(*result.x), shots=2048).result().get_counts()
+print(sorted(counts.items(), key=lambda kv: -kv[1]))
+```
+
+Line by line:
+
+- `qaoa_circuit` - the three-step recipe as a function of the two knobs. Note how directly the math compiles: one `rzz` per edge, one `rx` per qubit.
+- `cut_value(key[::-1])` - scores a measured bitstring. The `[::-1]` handles Qiskit's bit ordering (qubit 0 is the rightmost printed character), flipping the string so index \( i \) matches node \( i \).
+- `average_cut` - runs the circuit and averages the score over shots: an estimate of \( \langle H_C \rangle \). It returns the *negative* because `scipy.optimize.minimize` minimizes.
+- `minimize(..., method="COBYLA")` - the entire classical half of QAOA in one line. COBYLA is gradient-free, which suits noisy objective estimates.
+- The final print - after optimization, the six max-cut strings dominate the counts and `000`/`111` trail far behind. Any top string is a valid answer.
+
+## What you'll see
+
+- **[Probabilities](../tour/visualizations/probabilities.md)** - at good \( (\gamma, \beta) \): six healthy bars on the cut-value-2 strings and two suppressed bars on `000` and `111`. At \( \gamma = \beta = 0 \) the histogram is perfectly flat - the knobs really are what create the bias.
+- **[Q-Sphere](../tour/visualizations/q-sphere.md)** - after the cost layer, all eight branches with phase colors grouped by cut value (this is the score, written in phase); the mixer then converts that pattern into the size differences you see at the end.
+- **[Statevector](../tour/visualizations/statevector.md)** - amplitudes cluster into two magnitude classes matching the two cost classes; watch them separate as you increase \( \gamma \) from zero.
