@@ -3,7 +3,7 @@ site_url: https://docs.qucan.io/
 theme:
   name: material
   logo: assets/logo.svg
-  favicon: assets/logo.png
+  favicon: assets/favicon.svg
   palette:
     scheme: slate
     primary: custom
