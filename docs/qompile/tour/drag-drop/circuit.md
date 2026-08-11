@@ -170,17 +170,17 @@ Grouping doesn't just change the diagram - it changes the generated code too, de
     from numpy import pi
 
     def _Bell State #1():
-        sub = QuantumCircuit[2, name='Bell State #1']
-        sub.h[0]
-        sub.cx[0, 1]
-        return sub.to_gate[]
-    Bell State #1 = _Bell State #1[]
+        sub = QuantumCircuit(2, name='Bell State #1')
+        sub.h(0)
+        sub.cx(0, 1)
+        return sub.to_gate()
+    Bell State #1 = _Bell State #1()
 
-    qreg_q = QuantumRegister[3, 'q']
-    creg_c = ClassicalRegister[3, 'c']
-    circuit = QuantumCircuit[qreg_q, creg_c]
+    qreg_q = QuantumRegister(3, 'q')
+    creg_c = ClassicalRegister(3, 'c')
+    circuit = QuantumCircuit(qreg_q, creg_c)
 
-    circuit.append[Bell State #1, [qreg_q[0], qreg_q[1]]]
+    circuit.append(Bell State #1, [qreg_q[0], qreg_q[1]])
     ```
 
 === "Cirq"
@@ -191,16 +191,16 @@ Grouping doesn't just change the diagram - it changes the generated code too, de
     import cirq
     import math
 
-    def Bell State #1[a, b]:
+    def Bell State #1(a, b):
         return [
-            cirq.H[a],
-            cirq.CNOT[a, b],
+            cirq.H(a),
+            cirq.CNOT(a, b),
         ]
 
-    q = cirq.LineQubit.range[3]
-    circuit = cirq.Circuit[]
-    circuit.append[Bell State #1[q[0], q[1]]]
-    print[circuit]
+    q = cirq.LineQubit.range(3)
+    circuit = cirq.Circuit()
+    circuit.append(Bell State #1(q[0], q[1]))
+    print(circuit)
     ```
 
 === "Q#"

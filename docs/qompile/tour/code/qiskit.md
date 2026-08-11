@@ -10,16 +10,16 @@ The code panel can also render your circuit as Qiskit. Here's the same H + CNOT 
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
 from numpy import pi
 
-qreg_q = QuantumRegister[3, 'q']
-creg_c = ClassicalRegister[3, 'c']
-circuit = QuantumCircuit[qreg_q, creg_c]
+qreg_q = QuantumRegister(3, 'q')
+creg_c = ClassicalRegister(3, 'c')
+circuit = QuantumCircuit(qreg_q, creg_c)
 
-circuit.h[qreg_q[0]]
-circuit.cx[qreg_q[0], qreg_q[1]]
+circuit.h(qreg_q[0])
+circuit.cx(qreg_q[0], qreg_q[1])
 ```
 
-!!! note "Square brackets, not parentheses"
-    Qompile's Qiskit view uses square brackets for constructor and method calls (e.g. `circuit.h[qreg_q[0]]`), rather than the parentheses you'd normally see in hand-written Qiskit (`circuit.h(qreg_q[0])`). This is confirmed to be how Qompile renders it - if you copy this code to run outside Qompile, you may need to convert brackets to parentheses first.
+!!! note "Why the parentheses can look like brackets"
+    This site's code font (B612 Mono) draws `(` and `)` with a fairly square, angular shape, so at a glance they can look like `[` and `]`. The code above is ordinary Qiskit with real parentheses for calls - only the actual index brackets, like the `[0]` in `qreg_q[0]`, are square brackets.
 
 To go deeper than what Qompile shows, install the SDK, run circuits on real hardware, or look up specific gates and functions, see the official [Qiskit documentation](https://docs.quantum.ibm.com/).
 

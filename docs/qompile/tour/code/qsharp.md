@@ -26,6 +26,6 @@ namespace QompileCircuit {
 }
 ```
 
-Unlike the [Qiskit](qiskit.md) and [Cirq](cirq.md) views, Qompile's Q# output uses standard Q# syntax - parentheses for function calls (`H(q[0])`) and square brackets only where Q# itself uses them (array types and indexing, e.g. `Qubit[3]`, `q[0]`).
+Like the [Qiskit](qiskit.md) and [Cirq](cirq.md) views, this is standard Q# syntax - parentheses for function calls (`H(q[0])`) and square brackets only where Q# itself uses them (array types and indexing, e.g. `Qubit[3]`, `q[0]`).
 
 To install the QDK, set up Azure Quantum, or look up the standard operations library, see the official [Q# and Azure Quantum documentation](https://learn.microsoft.com/en-us/azure/quantum/).

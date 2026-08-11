@@ -28,7 +28,7 @@ That final state is \( |\Phi^+\rangle \). Neither qubit has a definite value on 
 
 The other three Bell states use the exact same H + CNOT core. The only difference is an **X** gate (a bit flip) on one or both qubits *before* the core, which changes what state the recipe starts from and therefore where it ends up.
 
-See [Build your circuit with code](../tour/code/openqasm.md) for details on the bracket-vs-parentheses quirk in the Qiskit and Cirq views.
+See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses in the Qiskit and Cirq code below can look a little square in this site's code font.
 
 === "|Φ+⟩"
 
@@ -57,12 +57,12 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
         from numpy import pi
 
-        qreg_q = QuantumRegister[3, 'q']
-        creg_c = ClassicalRegister[3, 'c']
-        circuit = QuantumCircuit[qreg_q, creg_c]
+        qreg_q = QuantumRegister(3, 'q')
+        creg_c = ClassicalRegister(3, 'c')
+        circuit = QuantumCircuit(qreg_q, creg_c)
 
-        circuit.h[qreg_q[0]]
-        circuit.cx[qreg_q[0], qreg_q[1]]
+        circuit.h(qreg_q[0])
+        circuit.cx(qreg_q[0], qreg_q[1])
         ```
 
     === "Cirq"
@@ -71,11 +71,11 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         import cirq
         import math
 
-        q = cirq.LineQubit.range[3]
-        circuit = cirq.Circuit[]
-        circuit.append[cirq.H[q[0]]]
-        circuit.append[cirq.CNOT[q[0], q[1]]]
-        print[circuit]
+        q = cirq.LineQubit.range(3)
+        circuit = cirq.Circuit()
+        circuit.append(cirq.H(q[0]))
+        circuit.append(cirq.CNOT(q[0], q[1]))
+        print(circuit)
         ```
 
     === "Q#"
@@ -128,13 +128,13 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
         from numpy import pi
 
-        qreg_q = QuantumRegister[3, 'q']
-        creg_c = ClassicalRegister[3, 'c']
-        circuit = QuantumCircuit[qreg_q, creg_c]
+        qreg_q = QuantumRegister(3, 'q')
+        creg_c = ClassicalRegister(3, 'c')
+        circuit = QuantumCircuit(qreg_q, creg_c)
 
-        circuit.x[qreg_q[0]]
-        circuit.h[qreg_q[0]]
-        circuit.cx[qreg_q[0], qreg_q[1]]
+        circuit.x(qreg_q[0])
+        circuit.h(qreg_q[0])
+        circuit.cx(qreg_q[0], qreg_q[1])
         ```
 
     === "Cirq"
@@ -143,12 +143,12 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         import cirq
         import math
 
-        q = cirq.LineQubit.range[3]
-        circuit = cirq.Circuit[]
-        circuit.append[cirq.X[q[0]]]
-        circuit.append[cirq.H[q[0]]]
-        circuit.append[cirq.CNOT[q[0], q[1]]]
-        print[circuit]
+        q = cirq.LineQubit.range(3)
+        circuit = cirq.Circuit()
+        circuit.append(cirq.X(q[0]))
+        circuit.append(cirq.H(q[0]))
+        circuit.append(cirq.CNOT(q[0], q[1]))
+        print(circuit)
         ```
 
     === "Q#"
@@ -202,13 +202,13 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
         from numpy import pi
 
-        qreg_q = QuantumRegister[3, 'q']
-        creg_c = ClassicalRegister[3, 'c']
-        circuit = QuantumCircuit[qreg_q, creg_c]
+        qreg_q = QuantumRegister(3, 'q')
+        creg_c = ClassicalRegister(3, 'c')
+        circuit = QuantumCircuit(qreg_q, creg_c)
 
-        circuit.x[qreg_q[1]]
-        circuit.h[qreg_q[0]]
-        circuit.cx[qreg_q[0], qreg_q[1]]
+        circuit.x(qreg_q[1])
+        circuit.h(qreg_q[0])
+        circuit.cx(qreg_q[0], qreg_q[1])
         ```
 
     === "Cirq"
@@ -217,12 +217,12 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         import cirq
         import math
 
-        q = cirq.LineQubit.range[3]
-        circuit = cirq.Circuit[]
-        circuit.append[cirq.X[q[1]]]
-        circuit.append[cirq.H[q[0]]]
-        circuit.append[cirq.CNOT[q[0], q[1]]]
-        print[circuit]
+        q = cirq.LineQubit.range(3)
+        circuit = cirq.Circuit()
+        circuit.append(cirq.X(q[1]))
+        circuit.append(cirq.H(q[0]))
+        circuit.append(cirq.CNOT(q[0], q[1]))
+        print(circuit)
         ```
 
     === "Q#"
@@ -277,14 +277,14 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
         from numpy import pi
 
-        qreg_q = QuantumRegister[3, 'q']
-        creg_c = ClassicalRegister[3, 'c']
-        circuit = QuantumCircuit[qreg_q, creg_c]
+        qreg_q = QuantumRegister(3, 'q')
+        creg_c = ClassicalRegister(3, 'c')
+        circuit = QuantumCircuit(qreg_q, creg_c)
 
-        circuit.x[qreg_q[0]]
-        circuit.x[qreg_q[1]]
-        circuit.h[qreg_q[0]]
-        circuit.cx[qreg_q[0], qreg_q[1]]
+        circuit.x(qreg_q[0])
+        circuit.x(qreg_q[1])
+        circuit.h(qreg_q[0])
+        circuit.cx(qreg_q[0], qreg_q[1])
         ```
 
     === "Cirq"
@@ -293,13 +293,13 @@ See [Build your circuit with code](../tour/code/openqasm.md) for details on the 
         import cirq
         import math
 
-        q = cirq.LineQubit.range[3]
-        circuit = cirq.Circuit[]
-        circuit.append[cirq.X[q[0]]]
-        circuit.append[cirq.X[q[1]]]
-        circuit.append[cirq.H[q[0]]]
-        circuit.append[cirq.CNOT[q[0], q[1]]]
-        print[circuit]
+        q = cirq.LineQubit.range(3)
+        circuit = cirq.Circuit()
+        circuit.append(cirq.X(q[0]))
+        circuit.append(cirq.X(q[1]))
+        circuit.append(cirq.H(q[0]))
+        circuit.append(cirq.CNOT(q[0], q[1]))
+        print(circuit)
         ```
 
     === "Q#"
