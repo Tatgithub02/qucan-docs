@@ -159,6 +159,21 @@
   }
 }
 
+/* Code blocks: pitch-black background, white text */
+[data-md-color-scheme="slate"] {
+  --md-code-bg-color: #000000;
+  --md-code-fg-color: #ffffff;
+}
+
+.md-typeset code {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.md-typeset pre > code {
+  color: #ffffff;
+}
+
 /* Gate reference: the small tile image cropped from the real Operations catalog */
 .md-typeset img.gate-tile {
   display: block;

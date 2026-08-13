@@ -1,5 +1,8 @@
 site_name: Documentation
 site_url: https://docs.qucan.io/
+repo_url: https://github.com/Tatgithub02/qucan-docs
+repo_name: Tatgithub02/qucan-docs
+edit_uri: edit/main/docs/
 theme:
   name: material
   logo: assets/logo.svg
