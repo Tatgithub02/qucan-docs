@@ -1,0 +1,28 @@
+name: Bug report
+description: Report a typo, broken link, or incorrect information in the docs
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page URL
+      description: Paste the URL of the page with the issue
+      placeholder: https://docs.qucan.io/qompile/algorithms/bell-states/
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What's wrong?
+      description: Describe the bug, typo, or incorrect information
+      placeholder: "The formula for |Φ+⟩ is missing a square root sign..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should it say instead?
+      description: If you know the correct version, include it here
+    validations:
+      required: false

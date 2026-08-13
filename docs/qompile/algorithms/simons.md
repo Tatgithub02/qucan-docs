@@ -75,7 +75,9 @@ References for the circuit layout: [Wikipedia: Simon's problem](https://en.wikip
 
 ## The circuit in code
 
-The \( n = 2 \), \( s = 11 \) circuit (3 qubits: 2 input + 1 output) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: superpose inputs, oracle, and interference + measurement.
+![Simon's algorithm circuit](images/simons.png)
+
+The \( n = 2 \), \( s = 11 \) circuit (4 qubits: 2 input + 2 output). [Barriers](../gates/barrier.md) separate the three phases: superpose inputs, oracle, and interference + measurement.
 
 === "OpenQASM 2.0"
 
@@ -133,21 +135,31 @@ The \( n = 2 \), \( s = 11 \) circuit (3 qubits: 2 input + 1 output) in all five
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
-    qc = QuantumCircuit(3, 2)
+    n = 2                      # input size; secret s = 11
+    qc = QuantumCircuit(n + 1, n)
 
-    # Superpose the input register
-    qc.h(range(2))
+    # All inputs in superposition — one oracle call covers all 2^n inputs
+    qc.h(range(n))
     qc.barrier()
 
-    # Oracle: f(x) = x0 XOR x1
-    qc.cx(0, 2)
-    qc.cx(1, 2)
+    # Oracle: f(x) = x0 XOR x1 (two-to-one with mask s = 11).
+    # No |-> ancilla trick — the answer is genuinely written into q[2],
+    # and it's the resulting entanglement that does the work.
+    qc.cx(0, n)
+    qc.cx(1, n)
     qc.barrier()
 
-    # Interfere and measure input register only
-    qc.h(range(2))
-    qc.measure(range(2), range(2))
+    # Output register isn't measured — discarding an entangled register
+    # has the same collapsing effect as measuring it
+    qc.h(range(n))
+    qc.measure(range(n), range(n))
+
+    # Only 00 and 11 appear (~50/50); 01 and 10 are killed by interference.
+    # Collect n-1 independent nonzero results, solve mod-2 to recover s.
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -205,46 +217,6 @@ The \( n = 2 \), \( s = 11 \) circuit (3 qubits: 2 input + 1 output) in all five
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-n = 2                      # input size; secret is s = 11
-
-qc = QuantumCircuit(n + 1, n)
-
-# Step 1: superpose the input register
-qc.h(range(n))
-qc.barrier()
-
-# Step 2: oracle for f(x) = x0 XOR x1  (two-to-one with mask s = 11)
-qc.cx(0, n)
-qc.cx(1, n)
-qc.barrier()
-
-# Steps 4-5: interfere and measure the input register
-qc.h(range(n))
-qc.measure(range(n), range(n))
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)
-
-# Step 6 (classical): every observed y satisfies y . s = 0 (mod 2).
-# Here the only informative outcome is y = 11, giving s1 XOR s0 = 0,
-# so s = 11 (since the promise rules out s = 00).
-```
-
-Line by line:
-
-- `qc.h(range(n))` - all four inputs queried in superposition with one oracle call, same opening move as the other query algorithms.
-- The two `qc.cx` calls - the whole oracle. Note the contrast with [Bernstein-Vazirani](bernstein-vazirani.md): no \( |-\rangle \) ancilla, no phase kickback; the answer is genuinely *written* into `q[2]`, and it's the resulting entanglement between the registers that does the work.
-- The output register isn't even measured here - discarding an entangled register has the same collapsing effect on the statistics as measuring it, so the code skips the step to keep the classical register clean.
-- Output: roughly `{'00': 512, '11': 512}`. The absence of `01` and `10` is the algorithm working - those are the outcomes killed by interference.
-
-For larger \( n \) you'd collect the distinct nonzero results and solve the mod-2 linear system (Gaussian elimination where addition is XOR) to recover \( s \).
 
 ## What you'll see
 

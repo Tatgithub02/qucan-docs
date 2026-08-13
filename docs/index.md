@@ -66,7 +66,7 @@ Welcome to the documentation for **Qucan**, a quantum computing platform for lea
 
 <div class="card-grid" markdown>
 
-<a class="card" href="https://github.com/Tatgithub02/qucan-docs/issues/new">
+<a class="card" href="https://github.com/Tatgithub02/qucan-docs/issues/new/choose">
 <strong>Report an issue</strong>
 <span>Found a bug, typo, or want to request new content? Open an issue on GitHub.</span>
 <span class="card-action">Open an issue &rarr;</span>

@@ -114,7 +114,9 @@ References for the circuit layout: [Wikipedia: Shor's algorithm](https://en.wiki
 
 ## The circuit in code
 
-The factor-15 circuit (\( a = 7 \), 3 counting + 4 work qubits) in all five supported languages. The controlled multiplications are expanded into [SWAP](../gates/swap.md) and [CNOT](../gates/cnot.md) gates. [Barriers](../gates/barrier.md) separate the phases: setup, controlled \( \times7 \), controlled \( \times4 \), inverse QFT, and measurement.
+![Shor's algorithm circuit](images/shors.png)
+
+The factor-15 circuit (\( a = 7 \), 3 counting + 4 work qubits). The controlled multiplications are expanded into [SWAP](../gates/swap.md) and [CNOT](../gates/cnot.md) gates. [Barriers](../gates/barrier.md) separate the phases: setup, controlled \( \times7 \), controlled \( \times4 \), inverse QFT, and measurement.
 
 === "OpenQASM 2.0"
 
@@ -216,37 +218,46 @@ The factor-15 circuit (\( a = 7 \), 3 counting + 4 work qubits) in all five supp
 === "Qiskit"
 
     ```python
-    from math import pi
+    from math import gcd, pi
+    from fractions import Fraction
     from qiskit import QuantumCircuit
     from qiskit.circuit.library import QFT
+    from qiskit_aer import AerSimulator
 
-    qc = QuantumCircuit(7, 3)
+    N, a, t = 15, 7, 3  # number to factor, base, counting qubits
 
-    # Superpose counting register
-    qc.h(range(3))
-    # Work register = 1
-    qc.x(3)
-    qc.barrier()
+    def controlled_mult(m):
+        """Controlled multiplication by m mod 15 on 4 work qubits."""
+        u = QuantumCircuit(4)
+        if m == 7:
+            # x7 = x8 (rotate bits) then negate mod 15
+            u.swap(0, 1); u.swap(1, 2); u.swap(2, 3)
+            for q in range(4):
+                u.x(q)
+        elif m == 4:
+            u.swap(1, 3); u.swap(0, 2)  # x4: shift bits by two
+        return u.to_gate(label=f"x{m} mod 15").control()
 
-    # Controlled x7 mod 15, controlled by q[0]
-    qc.cswap(0, 3, 4)
-    qc.cswap(0, 4, 5)
-    qc.cswap(0, 5, 6)
-    qc.cx(0, 3)
-    qc.cx(0, 4)
-    qc.cx(0, 5)
-    qc.cx(0, 6)
-    qc.barrier()
+    qc = QuantumCircuit(t + 4, t)
+    qc.h(range(t))                # counting register in superposition
+    qc.x(t)                       # work register = |0001> = 1
+    for j in range(t):
+        m = pow(a, 2**j, N)       # classical repeated squaring
+        if m != 1:                # x1 = identity, skip it
+            qc.append(controlled_mult(m), [j] + list(range(t, t + 4)))
+    qc.append(QFT(t, inverse=True), range(t))
+    qc.measure(range(t), range(t))
 
-    # Controlled x4 mod 15, controlled by q[1]
-    qc.cswap(1, 4, 6)
-    qc.cswap(1, 3, 5)
-    qc.barrier()
-
-    # Inverse QFT on counting register
-    qc.append(QFT(3, inverse=True), range(3))
-
-    qc.measure(range(3), range(3))
+    # Continued fractions recover r from the measured phase
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    for bits in sorted(counts):
+        phase = int(bits, 2) / 2**t
+        r = Fraction(phase).limit_denominator(N).denominator
+        if r % 2 == 0 and pow(a, r, N) == 1:
+            print(bits, "-> r =", r,
+                  "-> factors", gcd(a**(r//2)-1, N), gcd(a**(r//2)+1, N))
+        else:
+            print(bits, "-> retry")
     ```
 
 === "Cirq"
@@ -343,57 +354,6 @@ The factor-15 circuit (\( a = 7 \), 3 counting + 4 work qubits) in all five supp
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from math import gcd
-from fractions import Fraction
-from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFT
-from qiskit_aer import AerSimulator
-
-N, a, t = 15, 7, 3                     # number to factor, base, counting qubits
-
-def controlled_mult(m):
-    """Controlled multiplication by m mod 15 on 4 work qubits."""
-    u = QuantumCircuit(4)
-    if m == 7:
-        u.swap(0, 1); u.swap(1, 2); u.swap(2, 3)   # x8: rotate the bits
-        for q in range(4):
-            u.x(q)                                  # negate mod 15: x(-8) = x7
-    elif m == 4:
-        u.swap(1, 3); u.swap(0, 2)                  # x4: shift bits by two
-    return u.to_gate(label=f"x{m} mod 15").control()
-
-qc = QuantumCircuit(t + 4, t)
-qc.h(range(t))                          # counting register
-qc.x(t)                                 # work register = |0001> = 1
-for j in range(t):
-    m = pow(a, 2**j, N)                 # a^(2^j) mod N, computed classically
-    if m != 1:
-        qc.append(controlled_mult(m), [j] + list(range(t, t + 4)))
-qc.append(QFT(t, inverse=True), range(t))
-qc.measure(range(t), range(t))
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-for bits in sorted(counts):
-    phase = int(bits, 2) / 2**t
-    r = Fraction(phase).limit_denominator(N).denominator
-    if r % 2 == 0 and pow(a, r, N) == 1:
-        print(bits, "-> phase", phase, "-> r =", r,
-              "-> factors", gcd(a**(r // 2) - 1, N), gcd(a**(r // 2) + 1, N))
-    else:
-        print(bits, "-> phase", phase, "-> retry")
-```
-
-Line by line:
-
-- `controlled_mult` - multiplication mod 15 needs no arithmetic circuitry at all here, because multiplying by 4 or 8 just shuffles the four bits around (mod 15, doubling is a cyclic bit rotation), and \( \times 7 = \times(-8) \) adds a flip of every bit. `.to_gate().control()` then bolts a control qubit onto the whole permutation.
-- `pow(a, 2**j, N)` - the required power of \( U \) is computed *classically* first (repeated squaring), so each counting qubit controls one cheap permutation instead of \( 2^j \) stacked copies of \( U \). This is the standard teaching-scale shortcut: for a general large \( N \), building modular exponentiation as a circuit is the expensive part of real Shor's.
-- The `j` loop skips \( j = 2 \) entirely, since \( 7^4 \equiv 1 \) - multiplication by 1 is the identity.
-- `Fraction(phase).limit_denominator(N)` - the continued fractions step in one line: the simplest fraction matching the measured phase, with the candidate period as its denominator.
-- The `if` - verification (is \( r \) even, does \( a^r \equiv 1 \)?) before committing to the gcd step. Expected output: `000` and `100` marked retry, `010` and `110` both printing `factors 3 5`.
 
 ## What you'll see
 

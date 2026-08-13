@@ -88,7 +88,9 @@ References for the circuit layout: [Wikipedia: Variational quantum eigensolver](
 
 ## The circuit in code
 
-The ZZ measurement circuit at the optimal angle \( \theta = -\pi/2 \) in all five supported languages. [Barriers](../gates/barrier.md) separate the ansatz (state preparation) from the measurement. For the XX and YY circuits, add the appropriate basis rotations between the barrier and the measurement (see [The circuit](#the-circuit) above).
+![VQE circuit](images/vqe.png)
+
+The ZZ measurement circuit at the optimal angle \( \theta = -\pi/2 \). [Barriers](../gates/barrier.md) separate the ansatz (state preparation) from the measurement. For the XX and YY circuits, add the appropriate basis rotations between the barrier and the measurement (see [The circuit](#the-circuit) above).
 
 === "OpenQASM 2.0"
 
@@ -131,19 +133,41 @@ The ZZ measurement circuit at the optimal angle \( \theta = -\pi/2 \) in all fiv
 === "Qiskit"
 
     ```python
-    from math import pi
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+    from scipy.optimize import minimize
 
-    qc = QuantumCircuit(2, 2)
+    sim = AerSimulator()
 
-    # Ansatz: prepare the trial state
-    qc.x(1)
-    qc.ry(-pi / 2, 0)
-    qc.cx(0, 1)
-    qc.barrier()
+    def ansatz(theta):
+        """Tunable Bell-state recipe: at theta = -pi/2 this is |Psi->."""
+        qc = QuantumCircuit(2)
+        qc.x(1)
+        qc.ry(theta, 0)
+        qc.cx(0, 1)
+        return qc
 
-    # ZZ measurement (no basis rotation needed)
-    qc.measure([0, 1], [0, 1])
+    def measure_term(theta, basis):
+        """Measure one Pauli term. H rotates X->Z; Sdg+H rotates Y->Z."""
+        qc = ansatz(theta)
+        if basis == "XX":
+            qc.h([0, 1])
+        elif basis == "YY":
+            qc.sdg([0, 1])
+            qc.h([0, 1])
+        qc.measure_all()
+        counts = sim.run(qc, shots=2048).result().get_counts()
+        # Parity trick: even number of 1s -> +1, odd -> -1
+        signed = sum(shots if bits.count("1") % 2 == 0 else -shots
+                     for bits, shots in counts.items())
+        return signed / 2048
+
+    def energy(params):
+        return sum(measure_term(params[0], b) for b in ["XX", "YY", "ZZ"])
+
+    # Expected output: theta ~ -1.57, energy ~ -3
+    result = minimize(energy, x0=[0.1], method="COBYLA")
+    print("theta =", result.x[0], " energy =", result.fun)
     ```
 
 === "Cirq"
@@ -192,50 +216,6 @@ The ZZ measurement circuit at the optimal angle \( \theta = -\pi/2 \) in all fiv
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-from scipy.optimize import minimize
-
-sim = AerSimulator()
-
-def ansatz(theta):
-    qc = QuantumCircuit(2)
-    qc.x(1)
-    qc.ry(theta, 0)
-    qc.cx(0, 1)
-    return qc
-
-def measure_term(theta, basis):
-    qc = ansatz(theta)
-    if basis == "XX":
-        qc.h([0, 1])                  # rotate X into Z
-    elif basis == "YY":
-        qc.sdg([0, 1])                # rotate Y into Z
-        qc.h([0, 1])
-    qc.measure_all()
-    counts = sim.run(qc, shots=2048).result().get_counts()
-    signed = sum(shots if bits.count("1") % 2 == 0 else -shots
-                 for bits, shots in counts.items())
-    return signed / 2048
-
-def energy(params):
-    return sum(measure_term(params[0], b) for b in ["XX", "YY", "ZZ"])
-
-result = minimize(energy, x0=[0.1], method="COBYLA")
-print("theta =", result.x[0], " energy =", result.fun)   # ~ -1.57, ~ -3
-```
-
-Line by line:
-
-- `ansatz` - the tunable Bell-state recipe. At \( \theta = -\pi/2 \) it is gate-for-gate the \( |\Psi^-\rangle \) circuit from the [Bell states](bell-states.md) page.
-- `measure_term` - one Hamiltonian term per call. The `basis` rotations are the X and Y measurement trick from above; a ZZ term needs no rotation at all.
-- The `signed` sum - the parity trick: a two-qubit Pauli string scores \( +1 \) on outcomes with an even number of 1s (`00`, `11`) and \( -1 \) on odd ones (`01`, `10`). Averaging those \( \pm1 \)s over shots *is* the expectation value.
-- `energy` - the full \( \langle H \rangle \): all three terms, equal weights, added up. Each evaluation runs three circuits at 2048 shots.
-- `minimize(..., method="COBYLA")` - the classical half of the loop, identical in spirit to [QAOA](qaoa.md)'s. Because the energy is estimated from finite shots it wobbles by a few hundredths; COBYLA is gradient-free and tolerates that. Expected output: \( \theta \approx -1.57 \), energy \( \approx -3 \).
 
 ## What you'll see
 

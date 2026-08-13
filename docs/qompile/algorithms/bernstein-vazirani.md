@@ -68,7 +68,9 @@ References for the circuit layout: [Wikipedia: Bernstein-Vazirani algorithm](htt
 
 ## The circuit in code
 
-The \( s = 101 \) circuit (\( n = 3 \), 4 qubits) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: ancilla + input setup, oracle, and interference + measurement.
+![Bernstein-Vazirani circuit](images/bernstein-vazirani.png)
+
+The \( s = 101 \) circuit (\( n = 3 \), 4 qubits). [Barriers](../gates/barrier.md) separate the three phases: ancilla + input setup, oracle, and interference + measurement.
 
 === "OpenQASM 2.0"
 
@@ -140,25 +142,34 @@ The \( s = 101 \) circuit (\( n = 3 \), 4 qubits) in all five supported language
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
-    qc = QuantumCircuit(4, 3)
+    s = "101"                  # change this to any bitstring
+    n = len(s)
+    qc = QuantumCircuit(n + 1, n)
 
-    # Ancilla into |->
-    qc.x(3)
-    qc.h(3)
+    # Phase-kickback setup: ancilla into |->
+    qc.x(n)
+    qc.h(n)
 
-    # Superpose inputs
-    qc.h(range(3))
+    # All inputs in superposition
+    qc.h(range(n))
     qc.barrier()
 
-    # Oracle: s = 101
-    qc.cx(0, 3)
-    qc.cx(2, 3)
+    # Oracle: one CNOT per 1-bit of the secret.
+    # reversed(s) handles Qiskit's bit ordering (qubit 0 = rightmost char)
+    for i, bit in enumerate(reversed(s)):
+        if bit == "1":
+            qc.cx(i, n)
     qc.barrier()
 
-    # Interfere and measure inputs only
-    qc.h(range(3))
-    qc.measure(range(3), range(3))
+    # Final Hadamards decode the phase pattern back to |s>
+    qc.h(range(n))
+    qc.measure(range(n), range(n))
+
+    # Output: {'101': 1024} — one query, every bit, every shot
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -225,49 +236,6 @@ The \( s = 101 \) circuit (\( n = 3 \), 4 qubits) in all five supported language
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-s = "101"                  # the secret string
-n = len(s)
-
-qc = QuantumCircuit(n + 1, n)
-
-# Step 1: ancilla into |->
-qc.x(n)
-qc.h(n)
-
-# Step 2: superpose all inputs
-qc.h(range(n))
-qc.barrier()
-
-# Step 3: the oracle - one CNOT per 1-bit of the secret.
-# s is written as s_{n-1} ... s_1 s_0, so read it right to left.
-for i, bit in enumerate(reversed(s)):
-    if bit == "1":
-        qc.cx(i, n)
-qc.barrier()
-
-# Step 4: interfere
-qc.h(range(n))
-
-# Step 5: read out the secret
-qc.measure(range(n), range(n))
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)
-```
-
-Line by line:
-
-- `s = "101"` - change this to any bitstring; the rest of the code adapts automatically.
-- The `reversed(s)` in the oracle loop handles bit ordering: Qiskit's qubit 0 is the *rightmost* character of a printed bitstring, so the string is read right to left when wiring CNOTs.
-- `qc.measure(range(n), range(n))` - only the input register is measured; the ancilla did its phase-kickback job and ends unentangled in \( |-\rangle \).
-- Output: `{'101': 1024}`. One query, every bit of the secret, every shot.
 
 ## What you'll see
 

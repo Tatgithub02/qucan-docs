@@ -1,0 +1,27 @@
+name: Content request
+description: Suggest new content, a missing topic, or an improvement
+title: "[Request]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to see?
+      description: Describe the new content, topic, or improvement you'd like
+      placeholder: "Add a page explaining the Quantum Fourier Transform..."
+    validations:
+      required: true
+  - type: dropdown
+    id: section
+    attributes:
+      label: Which section?
+      options:
+        - Qompile (circuit composer)
+        - QCAP (curriculum)
+        - Qanvas (whiteboard)
+        - Dashboard
+        - Algorithms
+        - Gate reference
+        - General / other
+    validations:
+      required: true

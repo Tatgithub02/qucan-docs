@@ -81,7 +81,9 @@ References for the circuit layout: [Wikipedia: Quantum teleportation](https://en
 
 ## The circuit in code
 
-The full teleportation circuit (message state = RY(\( \pi/3 \))) in all five supported languages. [Barriers](../gates/barrier.md) separate the four phases: prepare the message, share the Bell pair, Bell measurement + corrections, and verification.
+![Teleportation circuit](images/teleportation.png)
+
+[Barriers](../gates/barrier.md) separate the four phases: prepare the message, share the Bell pair, Bell measurement + corrections, and verification.
 
 === "OpenQASM 2.0"
 
@@ -152,32 +154,39 @@ The full teleportation circuit (message state = RY(\( \pi/3 \))) in all five sup
     ```python
     from math import pi
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
     qc = QuantumCircuit(3, 3)
 
-    # Prepare the message state on q0
+    # Prepare a recognizable 75/25 message state on q0
     qc.ry(pi / 3, 0)
     qc.barrier()
 
-    # Share the Bell pair between q1 (Alice) and q2 (Bob)
+    # Shared Bell pair: q1 stays with Alice, q2 goes to Bob
     qc.h(1)
     qc.cx(1, 2)
     qc.barrier()
 
-    # Alice's Bell measurement
+    # Alice entangles her message qubit with her half, then measures
     qc.cx(0, 1)
     qc.h(0)
     qc.measure(0, 0)
     qc.measure(1, 1)
 
-    # Bob's corrections
+    # Bob's classically controlled corrections — real feed-forward:
+    # the gate only fires when the matching classical bit came out 1
     with qc.if_test((qc.clbits[1], 1)):
         qc.x(2)
     with qc.if_test((qc.clbits[0], 1)):
         qc.z(2)
 
-    # Verify
+    # Verify: Bob's qubit should show the same 75/25 fingerprint
     qc.measure(2, 2)
+
+    # Qiskit prints bits as c2 c1 c0 — summing over Alice's bits,
+    # Bob's bit (leftmost char) is 0 ~75% and 1 ~25%
+    counts = AerSimulator().run(qc, shots=4096).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -250,51 +259,6 @@ The full teleportation circuit (message state = RY(\( \pi/3 \))) in all five sup
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from math import pi
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-qc = QuantumCircuit(3, 3)
-
-# Step 1: prepare the message state on q0 (75% |0>, 25% |1>)
-qc.ry(pi / 3, 0)
-qc.barrier()
-
-# Step 2: Bell pair between q1 (Alice) and q2 (Bob)
-qc.h(1)
-qc.cx(1, 2)
-qc.barrier()
-
-# Step 3: Alice's Bell measurement on q0 and q1
-qc.cx(0, 1)
-qc.h(0)
-qc.measure(0, 0)
-qc.measure(1, 1)
-
-# Step 4: Bob's corrections, conditioned on Alice's classical bits
-with qc.if_test((qc.clbits[1], 1)):
-    qc.x(2)
-with qc.if_test((qc.clbits[0], 1)):
-    qc.z(2)
-
-# Step 5: check what arrived
-qc.measure(2, 2)
-
-counts = AerSimulator().run(qc, shots=4096).result().get_counts()
-print(counts)
-```
-
-Line by line:
-
-- `qc.ry(pi / 3, 0)` - prepares the recognizable 75/25 message state. Replace this with any gates you like; the protocol doesn't care what the state is.
-- `qc.h(1)`, `qc.cx(1, 2)` - the shared Bell pair. In a real deployment this happens ahead of time and the qubits are then separated.
-- `qc.cx(0, 1)`, `qc.h(0)`, two `measure` calls - Alice's Bell measurement. This is the decoder from [superdense coding](superdense-coding.md) run on the message-plus-pair; it projects her two qubits and produces the two classical bits.
-- The `with qc.if_test(...)` blocks - Bob's classically controlled corrections. This is real feed-forward: the gate only fires when the matching classical bit came out 1.
-- Reading the output: Qiskit prints bits as `c2 c1 c0` (leftmost = `q[2]`, Bob's verification bit). Summing over Alice's bits, the left character should be `0` about 75% of the time and `1` about 25% of the time - the message state's fingerprint, teleported.
 
 ## What you'll see
 

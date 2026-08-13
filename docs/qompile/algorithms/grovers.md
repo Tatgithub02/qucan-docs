@@ -70,7 +70,9 @@ References for the circuit layout: [Wikipedia: Grover's algorithm](https://en.wi
 
 ## The circuit in code
 
-The \( N = 4 \), winner-\( |11\rangle \) circuit (one Grover iteration, 2 qubits) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: superposition, oracle, and diffusion + measurement.
+![Grover's algorithm circuit](images/grovers.png)
+
+The \( N = 4 \), winner-\( |11\rangle \) circuit (one Grover iteration, 2 qubits). [Barriers](../gates/barrier.md) separate the three phases: superposition, oracle, and diffusion + measurement.
 
 === "OpenQASM 2.0"
 
@@ -140,18 +142,22 @@ The \( N = 4 \), winner-\( |11\rangle \) circuit (one Grover iteration, 2 qubits
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
     qc = QuantumCircuit(2, 2)
 
-    # Superpose
+    # Uniform superposition over all four items
     qc.h([0, 1])
     qc.barrier()
 
-    # Oracle: flip the sign of |11>
+    # Oracle: CZ flips the sign of |11> only.
+    # Replace with your own recognition test as a phase flip.
     qc.cz(0, 1)
     qc.barrier()
 
-    # Diffusion: inversion about the mean
+    # Diffusion (reflect about the uniform state):
+    # H-X maps the uniform state onto |11>, CZ flips everything
+    # except that reference, then X-H maps back.
     qc.h([0, 1])
     qc.x([0, 1])
     qc.cz(0, 1)
@@ -159,6 +165,10 @@ The \( N = 4 \), winner-\( |11\rangle \) circuit (one Grover iteration, 2 qubits
     qc.h([0, 1])
 
     qc.measure([0, 1], [0, 1])
+
+    # N=4 hits certainty at k=1 iteration. Output: {'11': 1024}
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -225,43 +235,6 @@ The \( N = 4 \), winner-\( |11\rangle \) circuit (one Grover iteration, 2 qubits
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-qc = QuantumCircuit(2, 2)
-
-# Step 1: uniform superposition over all four items
-qc.h([0, 1])
-qc.barrier()
-
-# Step 2a: oracle - flip the sign of |11>
-qc.cz(0, 1)
-qc.barrier()
-
-# Step 2b: diffusion - inversion about the mean
-qc.h([0, 1])
-qc.x([0, 1])
-qc.cz(0, 1)
-qc.x([0, 1])
-qc.h([0, 1])
-
-# Step 3: measure
-qc.measure([0, 1], [0, 1])
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)
-```
-
-Line by line:
-
-- `qc.cz(0, 1)` (the oracle) - flips the sign of the \( |11\rangle \) amplitude only. This is the "recognizer": in a real application this line is replaced by a circuit that computes your recognition test as a phase flip, and nothing else about the algorithm changes.
-- The diffusion block - reads as `H, X, CZ, X, H`. The sandwich structure implements "reflect about the uniform state": the H-X layers map the uniform state onto \( |11\rangle \), the CZ flips everything *except* that reference direction (up to a global sign), and the outer layers map back.
-- One iteration only, because \( N = 4 \) hits certainty at \( k = 1 \). For 3 qubits (\( N = 8 \)) the optimal count is 2 iterations (\( \approx 94.5\% \)); just repeat the oracle-plus-diffusion block.
-- Output: `{'11': 1024}`.
 
 ## What you'll see
 

@@ -62,7 +62,9 @@ References for the circuit layout: [Wikipedia: Quantum optimization algorithms](
 
 ## The circuit in code
 
-The triangle MaxCut circuit at the optimal angles \( (\gamma, \beta) = (0.79, 0.39) \) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: superposition, cost layer, and mixer layer + measurement.
+![QAOA circuit](images/qaoa.png)
+
+The triangle MaxCut circuit at \( (\gamma, \beta) = (0.79, 0.39) \). [Barriers](../gates/barrier.md) separate the three phases: superposition, cost layer, and mixer layer + measurement.
 
 === "OpenQASM 2.0"
 
@@ -126,25 +128,37 @@ The triangle MaxCut circuit at the optimal angles \( (\gamma, \beta) = (0.79, 0.
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+    from scipy.optimize import minimize
 
-    edges = [(0, 1), (1, 2), (0, 2)]
-    gamma, beta = 0.79, 0.39
+    edges = [(0, 1), (1, 2), (0, 2)]  # triangle graph
+    n = 3
+    sim = AerSimulator()
 
-    qc = QuantumCircuit(3, 3)
+    def qaoa_circuit(gamma, beta):
+        qc = QuantumCircuit(n, n)
+        qc.h(range(n))                    # every grouping, equally weighted
+        for i, j in edges:                # one RZZ per edge scores the cut
+            qc.rzz(2 * gamma, i, j)
+        qc.rx(2 * beta, range(n))         # mixer converts phases to amplitudes
+        qc.measure(range(n), range(n))
+        return qc
 
-    # Superpose
-    qc.h(range(3))
-    qc.barrier()
+    def cut_value(bits):
+        return sum(1 for i, j in edges if bits[i] != bits[j])
 
-    # Cost layer: RZZ(2*gamma) on each edge
-    for i, j in edges:
-        qc.rzz(2 * gamma, i, j)
-    qc.barrier()
+    def average_cut(params):
+        counts = sim.run(qaoa_circuit(*params), shots=2048).result().get_counts()
+        total = sum(cut_value(key[::-1]) * shots for key, shots in counts.items())
+        return -total / 2048              # negative because optimizers minimize
 
-    # Mixer layer: RX(2*beta) on each qubit
-    qc.rx(2 * beta, range(3))
+    # COBYLA is gradient-free, suits noisy objective estimates
+    result = minimize(average_cut, x0=[0.5, 0.5], method="COBYLA")
+    print("best (gamma, beta):", result.x, " average cut:", -result.fun)
 
-    qc.measure(range(3), range(3))
+    # The six max-cut strings dominate; 000/111 trail far behind
+    counts = sim.run(qaoa_circuit(*result.x), shots=2048).result().get_counts()
+    print(sorted(counts.items(), key=lambda kv: -kv[1]))
     ```
 
 === "Cirq"
@@ -212,49 +226,6 @@ The triangle MaxCut circuit at the optimal angles \( (\gamma, \beta) = (0.79, 0.
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-from scipy.optimize import minimize
-
-edges = [(0, 1), (1, 2), (0, 2)]      # the triangle
-n = 3
-sim = AerSimulator()
-
-def qaoa_circuit(gamma, beta):
-    qc = QuantumCircuit(n, n)
-    qc.h(range(n))                    # step 1: superpose
-    for i, j in edges:                # step 2: cost layer
-        qc.rzz(2 * gamma, i, j)
-    qc.rx(2 * beta, range(n))         # step 3: mixer layer
-    qc.measure(range(n), range(n))
-    return qc
-
-def cut_value(bits):
-    return sum(1 for i, j in edges if bits[i] != bits[j])
-
-def average_cut(params):
-    counts = sim.run(qaoa_circuit(*params), shots=2048).result().get_counts()
-    total = sum(cut_value(key[::-1]) * shots for key, shots in counts.items())
-    return -total / 2048              # negative: optimizers minimize
-
-result = minimize(average_cut, x0=[0.5, 0.5], method="COBYLA")
-print("best (gamma, beta):", result.x, " average cut:", -result.fun)
-
-counts = sim.run(qaoa_circuit(*result.x), shots=2048).result().get_counts()
-print(sorted(counts.items(), key=lambda kv: -kv[1]))
-```
-
-Line by line:
-
-- `qaoa_circuit` - the three-step recipe as a function of the two knobs. Note how directly the math compiles: one `rzz` per edge, one `rx` per qubit.
-- `cut_value(key[::-1])` - scores a measured bitstring. The `[::-1]` handles Qiskit's bit ordering (qubit 0 is the rightmost printed character), flipping the string so index \( i \) matches node \( i \).
-- `average_cut` - runs the circuit and averages the score over shots: an estimate of \( \langle H_C \rangle \). It returns the *negative* because `scipy.optimize.minimize` minimizes.
-- `minimize(..., method="COBYLA")` - the entire classical half of QAOA in one line. COBYLA is gradient-free, which suits noisy objective estimates.
-- The final print - after optimization, the six max-cut strings dominate the counts and `000`/`111` trail far behind. Any top string is a valid answer.
 
 ## What you'll see
 

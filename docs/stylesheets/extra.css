@@ -175,27 +175,38 @@
 }
 
 /* Hide the GitHub repo badge from the header - keeps edit_uri working on pages */
-.md-source {
-  display: none;
+.md-source,
+.md-header__source {
+  display: none !important;
 }
 
-/* Tighter typography: B612 at Material's default size feels zoomed in;
-   scale it down so more content fits per screen (closer to IBM-style density) */
+/* Tight typography: B612 at Material's default size feels zoomed in;
+   scale down aggressively so the homepage fits without scrolling */
 .md-typeset {
-  font-size: 0.72rem;
-  line-height: 1.65;
+  font-size: 0.62rem;
+  line-height: 1.55;
 }
 
 .md-typeset h1 {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
+  margin: 0 0 0.4em;
 }
 
 .md-typeset h2 {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
+  margin: 1em 0 0.3em;
 }
 
 .md-typeset h3 {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
+}
+
+.md-typeset p {
+  margin: 0.4em 0;
+}
+
+.md-content__inner {
+  padding-top: 0.5rem;
 }
 
 /* Brighter search icon so it stands out */
@@ -210,17 +221,17 @@
 /* Home-page card grid */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin: 1.25rem 0 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .card-grid a.card {
   display: block;
-  padding: 1.25rem 1.4rem;
+  padding: 0.7rem 0.9rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
   color: #ffffff;
   text-decoration: none;
   transition: border-color 0.2s, background 0.2s;
@@ -233,22 +244,22 @@
 
 .card-grid a.card strong {
   display: block;
-  font-size: 0.85rem;
-  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  margin-bottom: 0.2rem;
   color: #ffffff;
 }
 
 .card-grid a.card span {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   color: var(--qucan-grey);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .card-grid a.card .card-action {
   display: block;
-  margin-top: 0.8rem;
-  font-size: 0.72rem;
+  margin-top: 0.35rem;
+  font-size: 0.6rem;
   color: var(--qucan-accent);
 }
 

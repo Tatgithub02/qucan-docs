@@ -32,7 +32,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
 === "|Φ+⟩"
 
-    ![Bell state circuit: H on q0, CNOT from q0 to q1](../images/circuit/left-align-cnot.png)
+    ![Bell state Phi+ circuit](images/bell-phi-plus.png)
 
     Just **H** then **CNOT**, the base pattern, as derived step by step above.
 
@@ -115,7 +115,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
 === "|Φ-⟩"
 
-    <!-- Screenshot to add: X on q0, then H on q0, then CNOT from q0 to q1 -->
+    ![Bell state Phi- circuit](images/bell-phi-minus.png)
 
     An **X on `q[0]`** before the core flips `q[0]` to \( |1\rangle \) first. H acting on \( |1\rangle \) produces \( \tfrac{1}{\sqrt{2}}(|0\rangle - |1\rangle) \) instead of a plus, and that minus sign carries through the CNOT.
 
@@ -203,7 +203,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
 === "|Ψ+⟩"
 
-    <!-- Screenshot to add: X on q1, then H on q0, then CNOT from q0 to q1 -->
+    ![Bell state Psi+ circuit](images/bell-psi-plus.png)
 
     An **X on `q[1]`** before the core starts the pair at \( |01\rangle \) instead of \( |00\rangle \), so the CNOT ends up correlating opposite values: the outcomes become `01` and `10` instead of `00` and `11`.
 
@@ -291,7 +291,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
 === "|Ψ-⟩"
 
-    <!-- Screenshot to add: X on q0 and X on q1, then H on q0, then CNOT from q0 to q1 -->
+    ![Bell state Psi- circuit](images/bell-psi-minus.png)
 
     An **X on both qubits** combines the two effects: the pair starts at \( |11\rangle \), giving both the swapped correlation (`01`/`10`) and the minus sign.
 

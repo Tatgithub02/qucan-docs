@@ -88,7 +88,9 @@ Good external references for the circuit layout: [Wikipedia: Superdense coding](
 
 ## The circuit in code
 
-The message-`11` circuit in all five supported languages. [Barriers](../gates/barrier.md) mark the three phases of the protocol (entangle, encode, decode) as vertical lines on the circuit diagram; they don't affect the quantum state or the output.
+![Superdense coding circuit for message 11](images/superdense-coding.png)
+
+[Barriers](../gates/barrier.md) mark the three phases of the protocol (entangle, encode, decode) as vertical lines on the circuit diagram; they don't affect the quantum state or the output.
 
 === "OpenQASM 2.0"
 
@@ -144,23 +146,34 @@ The message-`11` circuit in all five supported languages. [Barriers](../gates/ba
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
+    # Two qubits (Alice q0, Bob q1) and two classical bits for the decoded message
+    message = "11"
     qc = QuantumCircuit(2, 2)
 
-    # Entangle
+    # Step 1: shared Bell pair (imagine the qubits being separated afterward)
     qc.h(0)
     qc.cx(0, 1)
     qc.barrier()
 
-    # Alice encodes 11: X then Z on q0
-    qc.x(0)
-    qc.z(0)
+    # Step 2: Alice encodes her message on q0 alone
+    # X flips the correlation (01/10 instead of 00/11), Z flips the phase
+    if message[1] == "1":
+        qc.x(0)
+    if message[0] == "1":
+        qc.z(0)
     qc.barrier()
 
-    # Bob decodes
+    # Step 3: Bob decodes — undoes the Bell recipe, mapping each
+    # Bell state to a distinct pair of plain bits
     qc.cx(0, 1)
     qc.h(0)
     qc.measure([0, 1], [0, 1])
+
+    # Every shot decodes correctly: {'11': 1024}
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -219,51 +232,6 @@ The message-`11` circuit in all five supported languages. [Barriers](../gates/ba
         }
     }
     ```
-
-## The Qiskit code
-
-Here's the full protocol for message `11` in standard Qiskit (runnable outside Qompile):
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-message = "11"          # the two bits Alice wants to send, as (z, x)
-
-qc = QuantumCircuit(2, 2)
-
-# Step 1: create the shared Bell pair
-qc.h(0)
-qc.cx(0, 1)
-qc.barrier()
-
-# Step 2: Alice encodes her message on q0 alone
-if message[1] == "1":   # x bit
-    qc.x(0)
-if message[0] == "1":   # z bit
-    qc.z(0)
-qc.barrier()
-
-# Step 3: Bob decodes with the Bell measurement
-qc.cx(0, 1)
-qc.h(0)
-qc.measure([0, 1], [0, 1])
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)
-```
-
-Line by line:
-
-- `QuantumCircuit(2, 2)` - two qubits (Alice's and Bob's) and two classical bits to hold the decoded message.
-- `qc.h(0)` then `qc.cx(0, 1)` - the standard Bell-pair recipe from the [Bell states](bell-states.md) page. After this, imagine the qubits being separated.
-- `qc.barrier()` - purely visual, it draws a dividing line so the three phases of the protocol are easy to see in the circuit diagram. It doesn't change the state.
-- The two `if` statements - Alice's encoding. Note she only ever touches qubit 0. Try changing `message` to any of the four values.
-- `qc.cx(0, 1)` then `qc.h(0)` - Bob's decoder, which "un-does" the entangling recipe and converts each Bell state into a distinct pair of plain bits.
-- The result should be `{'11': 1024}` - every single shot decodes correctly, because the four Bell states are perfectly distinguishable.
-
-!!! note
-    Qiskit prints measurement results with qubit 0 on the **right**. For this circuit both conventions happen to agree for `00` and `11`, but if you experiment with `01`/`10`, remember: the right-hand character of the printed string is `q[0]` (the \( z \) bit), the left-hand one is `q[1]` (the \( x \) bit).
 
 ## What you'll see
 

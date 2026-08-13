@@ -74,7 +74,9 @@ References for the circuit layout: [Wikipedia: Quantum phase estimation algorith
 
 ## The circuit in code
 
-The T-gate QPE circuit (\( t = 3 \) counting qubits, 1 target, \( \varphi = 1/8 \)) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: eigenstate + superposition, controlled phase kicks, and inverse QFT + measurement.
+![QPE circuit](images/qpe.png)
+
+The T-gate QPE circuit (\( t = 3 \) counting qubits, 1 target, \( \varphi = 1/8 \)). [Barriers](../gates/barrier.md) separate the three phases: eigenstate + superposition, controlled phase kicks, and inverse QFT + measurement.
 
 === "OpenQASM 2.0"
 
@@ -158,25 +160,35 @@ The T-gate QPE circuit (\( t = 3 \) counting qubits, 1 target, \( \varphi = 1/8 
     from math import pi
     from qiskit import QuantumCircuit
     from qiskit.circuit.library import QFT
+    from qiskit_aer import AerSimulator
 
-    qc = QuantumCircuit(4, 3)
+    t = 3                                  # counting qubits (= binary digits of precision)
+    qc = QuantumCircuit(t + 1, t)
 
-    # Eigenstate |1> on the target
-    qc.x(3)
+    # QPE needs the eigenstate handed to it — here that's trivial (|1>)
+    qc.x(t)
 
-    # Superpose counting register
-    qc.h(range(3))
+    # Superpose the counting register
+    qc.h(range(t))
     qc.barrier()
 
-    # Controlled powers of T = P(pi/4)
-    for j in range(3):
-        qc.cp(pi / 4 * 2**j, j, 3)
+    # Powers-of-two ladder: counting qubit j controls U^(2^j).
+    # For T = P(pi/4), running it 2^j times = one P gate with 2^j× the angle.
+    for j in range(t):
+        qc.cp(pi / 4 * 2**j, j, t)
     qc.barrier()
 
-    # Inverse QFT on counting register
-    qc.append(QFT(3, inverse=True), range(3))
+    # The decoder: inverse QFT converts "number stored in phases"
+    # into a readable binary number (includes qubit-reversal swaps)
+    qc.append(QFT(t, inverse=True), range(t))
 
-    qc.measure(range(3), range(3))
+    qc.measure(range(t), range(t))
+
+    # Readout: integer m, then phi = m / 2^t
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    m = int(max(counts, key=counts.get), 2)
+    print(counts)          # {'001': 1024}
+    print("phase =", m / 2**t)  # 0.125 — exact because 1/8 fits in 3 bits
     ```
 
 === "Cirq"
@@ -257,49 +269,6 @@ The T-gate QPE circuit (\( t = 3 \) counting qubits, 1 target, \( \varphi = 1/8 
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from math import pi
-from qiskit import QuantumCircuit
-from qiskit.circuit.library import QFT
-from qiskit_aer import AerSimulator
-
-t = 3                                  # counting qubits
-qc = QuantumCircuit(t + 1, t)
-
-# Step 1: eigenstate |1> on the target qubit
-qc.x(t)
-
-# Step 2: superpose the counting register
-qc.h(range(t))
-qc.barrier()
-
-# Step 3: counting qubit j controls U^(2^j), with U = T = P(pi/4)
-for j in range(t):
-    qc.cp(pi / 4 * 2**j, j, t)
-qc.barrier()
-
-# Step 4: inverse QFT on the counting register
-qc.append(QFT(t, inverse=True), range(t))
-
-# Step 5: read the phase
-qc.measure(range(t), range(t))
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)          # {'001': 1024}
-m = int(max(counts, key=counts.get), 2)
-print("phase =", m / 2**t)             # 0.125
-```
-
-Line by line:
-
-- `qc.x(t)` - QPE needs the eigenstate handed to it. Here that's trivial (\( |1\rangle \)); in serious applications preparing (or approximating) the eigenstate is a real part of the work, and [Shor's algorithm](shors.md) shows one elegant way around it.
-- `qc.cp(pi / 4 * 2**j, j, t)` - the powers-of-two ladder in one loop. Running \( U \) \( 2^j \) times equals a single P gate with \( 2^j \) times the angle here, which is why this demo is cheap; for a general \( U \) you'd repeat the controlled gate.
-- `QFT(t, inverse=True)` - the decoder, from Qiskit's library (it includes the qubit-reversal swaps). The hand-built gate sequence in the circuit section is exactly what this expands to for \( t = 3 \).
-- `int(..., 2) / 2**t` - the readout convention: interpret the counting register as an integer \( m \), then \( \varphi \approx m / 2^t \).
-- Output: `{'001': 1024}` and `phase = 0.125`, exact because \( \frac{1}{8} \) fits in 3 bits. Try `qc.cp(2 * pi * 0.3 * 2**j, j, t)` (a phase of 0.3, which doesn't fit) and you'll see the counts pile up on `010` (0.25) and `011` (0.375), the two nearest 3-bit values - QPE degrading gracefully.
 
 ## What you'll see
 

@@ -101,7 +101,9 @@ References for the circuit layout: [Wikipedia: Deutsch-Jozsa algorithm](https://
 
 ## The circuit in code
 
-The balanced-oracle circuit (\( n = 2 \), \( f(x) = x_0 \)) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: ancilla + input setup, oracle, and interference + measurement.
+![Deutsch-Jozsa circuit](images/deutsch-jozsa.png)
+
+The balanced-oracle circuit (\( n = 2 \), \( f(x) = x_0 \)). [Barriers](../gates/barrier.md) separate the three phases: ancilla + input setup, oracle, and interference + measurement.
 
 === "OpenQASM 2.0"
 
@@ -165,24 +167,31 @@ The balanced-oracle circuit (\( n = 2 \), \( f(x) = x_0 \)) in all five supporte
 
     ```python
     from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
 
-    qc = QuantumCircuit(3, 2)
+    n = 2
+    qc = QuantumCircuit(n + 1, n)  # n inputs + 1 ancilla, n classical bits
 
-    # Ancilla into |->
-    qc.x(2)
-    qc.h(2)
+    # Phase-kickback setup: ancilla into |->
+    qc.x(n)
+    qc.h(n)
 
-    # Superpose inputs
-    qc.h(range(2))
+    # All 2^n inputs in superposition with one line
+    qc.h(range(n))
     qc.barrier()
 
-    # Oracle: f(x) = x0
-    qc.cx(0, 2)
+    # The entire oracle: f(x) = x0 is just one CNOT.
+    # Swap in any circuit computing f into the ancilla here.
+    qc.cx(0, n)
     qc.barrier()
 
-    # Interfere and measure inputs only
-    qc.h(range(2))
-    qc.measure(range(2), range(2))
+    # Final Hadamards translate phases into measurable bits
+    qc.h(range(n))
+    qc.measure(range(n), range(n))
+
+    # Output: {'01': 1024} for balanced, {'00': 1024} for constant
+    counts = AerSimulator().run(qc, shots=1024).result().get_counts()
+    print(counts)
     ```
 
 === "Cirq"
@@ -246,49 +255,6 @@ The balanced-oracle circuit (\( n = 2 \), \( f(x) = x_0 \)) in all five supporte
         }
     }
     ```
-
-## The Qiskit code
-
-```python
-from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
-
-n = 2                      # number of input qubits
-oracle = "balanced"        # or "constant"
-
-qc = QuantumCircuit(n + 1, n)
-
-# Step 1: ancilla into |->
-qc.x(n)
-qc.h(n)
-
-# Step 2: superpose all inputs
-qc.h(range(n))
-qc.barrier()
-
-# Step 3: the oracle (one query)
-if oracle == "balanced":
-    qc.cx(0, n)            # f(x) = x0
-# constant f = 0 means: do nothing here
-qc.barrier()
-
-# Step 4: interfere
-qc.h(range(n))
-
-# Step 5: measure the input register only
-qc.measure(range(n), range(n))
-
-counts = AerSimulator().run(qc, shots=1024).result().get_counts()
-print(counts)
-```
-
-Line by line:
-
-- `QuantumCircuit(n + 1, n)` - \( n \) input qubits plus one ancilla, but only \( n \) classical bits: the ancilla is never measured (it's still just \( |-\rangle \) at the end, carrying no information).
-- `qc.x(n)`, `qc.h(n)` - the phase-kickback setup. Without this the oracle would write answers into the ancilla instead of stamping phases, and the algorithm wouldn't work.
-- `qc.h(range(n))` - one line, all \( 2^n \) inputs in superposition.
-- `qc.cx(0, n)` - the entire "balanced" oracle for \( f(x) = x_0 \). Swap in your own oracle here: any circuit computing some \( f \) into the ancilla works, and the algorithm never needs to know what's inside.
-- Output: `{'00': 1024}` for constant, `{'01': 1024}` for this balanced oracle. Every shot agrees - the answer is deterministic.
 
 ## What you'll see
 
