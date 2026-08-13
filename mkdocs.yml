@@ -31,7 +31,6 @@ nav:
   - Dashboard: dashboard/index.md
   - QCAP:
       - Overview: qcap/index.md
-      - What is QCAP?: qcap/what-is-it.md
       - Tour of QCAP:
           - Overview: qcap/tour/overview.md
           - Modules: qcap/tour/modules.md
@@ -44,7 +43,6 @@ nav:
           - Certificate: qcap/tour/certificate.md
   - Qanvas:
       - Overview: qanvas/index.md
-      - What is Qanvas?: qanvas/what-is-it.md
       - Tour of Qanvas:
           - Overview: qanvas/tour/overview.md
           - Tools panel: qanvas/tour/tools.md
@@ -64,7 +62,6 @@ nav:
       - Help: qanvas/help.md
   - Qompile:
       - Overview: qompile/index.md
-      - What is Qompile?: qompile/what-is-it.md
       - What it can do: qompile/what-it-can-do.md
       - Tour of Qompile:
           - Overview: qompile/tour/overview.md
@@ -139,7 +136,6 @@ nav:
       - Help: qompile/help.md
   - Sqope:
       - Overview: sqope/index.md
-      - What is Sqope?: sqope/what-is-it.md
       - Tour of Sqope: sqope/tour/overview.md
 
 markdown_extensions:
