@@ -218,7 +218,17 @@
   color: #ffffff;
 }
 
-/* Homepage: full-width content when sidebars are hidden */
+/* Force hamburger menu on all screen sizes (not just mobile) */
+.md-header__button[for="__drawer"] {
+  display: inline-block !important;
+}
+
+/* Hide the permanent left sidebar on desktop — use overlay drawer instead */
+.md-sidebar--primary {
+  display: none !important;
+}
+
+/* Let content use the full width when sidebar is gone */
 .md-main__inner.md-grid {
   max-width: 100%;
 }
