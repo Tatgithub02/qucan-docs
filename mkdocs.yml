@@ -13,7 +13,6 @@ theme:
     text: B612
     code: B612 Mono
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.top
     - content.code.copy
