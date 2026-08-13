@@ -174,6 +174,84 @@
   color: #ffffff;
 }
 
+/* Hide the GitHub repo badge from the header - keeps edit_uri working on pages */
+.md-source {
+  display: none;
+}
+
+/* Tighter typography: B612 at Material's default size feels zoomed in;
+   scale it down so more content fits per screen (closer to IBM-style density) */
+.md-typeset {
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.md-typeset h1 {
+  font-size: 1.6rem;
+}
+
+.md-typeset h2 {
+  font-size: 1.25rem;
+}
+
+.md-typeset h3 {
+  font-size: 1.05rem;
+}
+
+/* Brighter search icon so it stands out */
+.md-search__icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.md-search__icon:hover {
+  color: #ffffff;
+}
+
+/* Home-page card grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.card-grid a.card {
+  display: block;
+  padding: 1.25rem 1.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.card-grid a.card:hover {
+  border-color: var(--qucan-accent);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.card-grid a.card strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  color: #ffffff;
+}
+
+.card-grid a.card span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--qucan-grey);
+  line-height: 1.55;
+}
+
+.card-grid a.card .card-action {
+  display: block;
+  margin-top: 0.8rem;
+  font-size: 0.72rem;
+  color: var(--qucan-accent);
+}
+
 /* Gate reference: the small tile image cropped from the real Operations catalog */
 .md-typeset img.gate-tile {
   display: block;
