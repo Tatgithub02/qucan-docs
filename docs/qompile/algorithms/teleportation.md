@@ -79,6 +79,178 @@ Build on 3 qubits (or load it from the [Ready algorithms](../tour/drag-drop/oper
 
 References for the circuit layout: [Wikipedia: Quantum teleportation](https://en.wikipedia.org/wiki/Quantum_teleportation) and [IBM Quantum Learning: Entanglement in action](https://learning.quantum.ibm.com/course/basics-of-quantum-information/entanglement-in-action).
 
+## The circuit in code
+
+The full teleportation circuit (message state = RY(\( \pi/3 \))) in all five supported languages. [Barriers](../gates/barrier.md) separate the four phases: prepare the message, share the Bell pair, Bell measurement + corrections, and verification.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[3];
+    creg c[3];
+
+    // Prepare the message state on q0
+    ry(pi/3) q[0];
+    barrier q;
+
+    // Share the Bell pair between q1 (Alice) and q2 (Bob)
+    h q[1];
+    cx q[1], q[2];
+    barrier q;
+
+    // Alice's Bell measurement
+    cx q[0], q[1];
+    h q[0];
+    measure q[0] -> c[0];
+    measure q[1] -> c[1];
+
+    // Bob's corrections
+    if(c[1]==1) x q[2];
+    if(c[0]==1) z q[2];
+
+    // Verify
+    measure q[2] -> c[2];
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[3] q;
+    bit[3] c;
+
+    // Prepare the message state on q0
+    ry(pi/3) q[0];
+    barrier q;
+
+    // Share the Bell pair between q1 (Alice) and q2 (Bob)
+    h q[1];
+    cx q[1], q[2];
+    barrier q;
+
+    // Alice's Bell measurement
+    cx q[0], q[1];
+    h q[0];
+    c[0] = measure q[0];
+    c[1] = measure q[1];
+
+    // Bob's corrections
+    if (c[1] == 1) x q[2];
+    if (c[0] == 1) z q[2];
+
+    // Verify
+    c[2] = measure q[2];
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from math import pi
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(3, 3)
+
+    # Prepare the message state on q0
+    qc.ry(pi / 3, 0)
+    qc.barrier()
+
+    # Share the Bell pair between q1 (Alice) and q2 (Bob)
+    qc.h(1)
+    qc.cx(1, 2)
+    qc.barrier()
+
+    # Alice's Bell measurement
+    qc.cx(0, 1)
+    qc.h(0)
+    qc.measure(0, 0)
+    qc.measure(1, 1)
+
+    # Bob's corrections
+    with qc.if_test((qc.clbits[1], 1)):
+        qc.x(2)
+    with qc.if_test((qc.clbits[0], 1)):
+        qc.z(2)
+
+    # Verify
+    qc.measure(2, 2)
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+    import numpy as np
+
+    q = cirq.LineQubit.range(3)
+
+    circuit = cirq.Circuit()
+    # Prepare the message state on q0
+    circuit.append(cirq.ry(np.pi / 3).on(q[0]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Share the Bell pair between q1 (Alice) and q2 (Bob)
+    circuit.append(cirq.H(q[1]))
+    circuit.append(cirq.CNOT(q[1], q[2]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Alice's Bell measurement
+    circuit.append(cirq.CNOT(q[0], q[1]))
+    circuit.append(cirq.H(q[0]))
+    circuit.append(cirq.measure(q[0], key='m0'))
+    circuit.append(cirq.measure(q[1], key='m1'))
+
+    # Bob's corrections (classically controlled)
+    circuit.append(cirq.X(q[2]).with_classical_controls('m1'))
+    circuit.append(cirq.Z(q[2]).with_classical_controls('m0'))
+
+    # Verify
+    circuit.append(cirq.measure(q[2], key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+        open Microsoft.Quantum.Math;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[3];
+            mutable c = [Zero, size = 3];
+
+            // Prepare the message state on q0
+            Ry(PI() / 3.0, q[0]);
+
+            // Share the Bell pair between q1 (Alice) and q2 (Bob)
+            H(q[1]);
+            CNOT(q[1], q[2]);
+
+            // Alice's Bell measurement
+            CNOT(q[0], q[1]);
+            H(q[0]);
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+
+            // Bob's corrections
+            if (c[1] == One) { X(q[2]); }
+            if (c[0] == One) { Z(q[2]); }
+
+            // Verify
+            set c w/= 2 <- M(q[2]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python

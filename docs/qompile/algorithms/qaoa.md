@@ -60,6 +60,159 @@ In Qompile you set the two angles by hand; the "classical loop" is you trying di
 
 References for the circuit layout: [Wikipedia: Quantum optimization algorithms](https://en.wikipedia.org/wiki/Quantum_optimization_algorithms) and [IBM Quantum Learning: Variational algorithm design](https://learning.quantum.ibm.com/course/variational-algorithm-design).
 
+## The circuit in code
+
+The triangle MaxCut circuit at the optimal angles \( (\gamma, \beta) = (0.79, 0.39) \) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: superposition, cost layer, and mixer layer + measurement.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[3];
+    creg c[3];
+
+    // Superpose
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Cost layer: RZZ(2*gamma) on each edge, gamma = 0.79
+    rzz(1.58) q[0], q[1];
+    rzz(1.58) q[1], q[2];
+    rzz(1.58) q[0], q[2];
+    barrier q;
+
+    // Mixer layer: RX(2*beta) on each qubit, beta = 0.39
+    rx(0.78) q[0];
+    rx(0.78) q[1];
+    rx(0.78) q[2];
+
+    measure q -> c;
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[3] q;
+    bit[3] c;
+
+    // Superpose
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Cost layer: RZZ(2*gamma) on each edge
+    rzz(1.58) q[0], q[1];
+    rzz(1.58) q[1], q[2];
+    rzz(1.58) q[0], q[2];
+    barrier q;
+
+    // Mixer layer: RX(2*beta) on each qubit
+    rx(0.78) q[0];
+    rx(0.78) q[1];
+    rx(0.78) q[2];
+
+    c = measure q;
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from qiskit import QuantumCircuit
+
+    edges = [(0, 1), (1, 2), (0, 2)]
+    gamma, beta = 0.79, 0.39
+
+    qc = QuantumCircuit(3, 3)
+
+    # Superpose
+    qc.h(range(3))
+    qc.barrier()
+
+    # Cost layer: RZZ(2*gamma) on each edge
+    for i, j in edges:
+        qc.rzz(2 * gamma, i, j)
+    qc.barrier()
+
+    # Mixer layer: RX(2*beta) on each qubit
+    qc.rx(2 * beta, range(3))
+
+    qc.measure(range(3), range(3))
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+
+    q = cirq.LineQubit.range(3)
+    edges = [(0, 1), (1, 2), (0, 2)]
+    gamma, beta = 0.79, 0.39
+
+    circuit = cirq.Circuit()
+    # Superpose
+    circuit.append([cirq.H(q[i]) for i in range(3)])
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Cost layer: RZZ(2*gamma) on each edge
+    for i, j in edges:
+        circuit.append(cirq.ZZPowGate(exponent=2 * gamma / 3.14159).on(q[i], q[j]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Mixer layer: RX(2*beta) on each qubit
+    circuit.append([cirq.rx(2 * beta).on(q[i]) for i in range(3)])
+
+    circuit.append(cirq.measure(*q, key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+        open Microsoft.Quantum.Math;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[3];
+            mutable c = [Zero, size = 3];
+
+            let gamma = 0.79;
+            let beta = 0.39;
+
+            // Superpose
+            H(q[0]);
+            H(q[1]);
+            H(q[2]);
+
+            // Cost layer: Rzz(2*gamma) on each edge
+            Exp([PauliZ, PauliZ], gamma, [q[0], q[1]]);
+            Exp([PauliZ, PauliZ], gamma, [q[1], q[2]]);
+            Exp([PauliZ, PauliZ], gamma, [q[0], q[2]]);
+
+            // Mixer layer: Rx(2*beta) on each qubit
+            Rx(2.0 * beta, q[0]);
+            Rx(2.0 * beta, q[1]);
+            Rx(2.0 * beta, q[2]);
+
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+            set c w/= 2 <- M(q[2]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python

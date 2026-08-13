@@ -86,6 +86,113 @@ Each of the three gives perfectly anticorrelated 50/50 outcomes (`01` and `10`),
 
 References for the circuit layout: [Wikipedia: Variational quantum eigensolver](https://en.wikipedia.org/wiki/Variational_quantum_eigensolver) and [IBM Quantum Learning: Variational algorithm design](https://learning.quantum.ibm.com/course/variational-algorithm-design).
 
+## The circuit in code
+
+The ZZ measurement circuit at the optimal angle \( \theta = -\pi/2 \) in all five supported languages. [Barriers](../gates/barrier.md) separate the ansatz (state preparation) from the measurement. For the XX and YY circuits, add the appropriate basis rotations between the barrier and the measurement (see [The circuit](#the-circuit) above).
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[2];
+    creg c[2];
+
+    // Ansatz: prepare the trial state
+    x q[1];
+    ry(-pi/2) q[0];
+    cx q[0], q[1];
+    barrier q;
+
+    // ZZ measurement (no basis rotation needed)
+    measure q -> c;
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[2] q;
+    bit[2] c;
+
+    // Ansatz: prepare the trial state
+    x q[1];
+    ry(-pi/2) q[0];
+    cx q[0], q[1];
+    barrier q;
+
+    // ZZ measurement
+    c = measure q;
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from math import pi
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(2, 2)
+
+    # Ansatz: prepare the trial state
+    qc.x(1)
+    qc.ry(-pi / 2, 0)
+    qc.cx(0, 1)
+    qc.barrier()
+
+    # ZZ measurement (no basis rotation needed)
+    qc.measure([0, 1], [0, 1])
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+    import numpy as np
+
+    q = cirq.LineQubit.range(2)
+
+    circuit = cirq.Circuit()
+    # Ansatz: prepare the trial state
+    circuit.append(cirq.X(q[1]))
+    circuit.append(cirq.ry(-np.pi / 2).on(q[0]))
+    circuit.append(cirq.CNOT(q[0], q[1]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # ZZ measurement
+    circuit.append(cirq.measure(*q, key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+        open Microsoft.Quantum.Math;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[2];
+            mutable c = [Zero, size = 2];
+
+            // Ansatz: prepare the trial state
+            X(q[1]);
+            Ry(-PI() / 2.0, q[0]);
+            CNOT(q[0], q[1]);
+
+            // ZZ measurement
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python

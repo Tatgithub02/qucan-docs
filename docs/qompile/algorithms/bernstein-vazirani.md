@@ -66,6 +66,166 @@ To hide a different secret, change which input qubits get a CNOT to the ancilla 
 
 References for the circuit layout: [Wikipedia: Bernstein-Vazirani algorithm](https://en.wikipedia.org/wiki/Bernstein%E2%80%93Vazirani_algorithm) and [IBM Quantum Learning: Quantum query algorithms](https://learning.quantum.ibm.com/course/fundamentals-of-quantum-algorithms/quantum-query-algorithms).
 
+## The circuit in code
+
+The \( s = 101 \) circuit (\( n = 3 \), 4 qubits) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: ancilla + input setup, oracle, and interference + measurement.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[4];
+    creg c[3];
+
+    // Ancilla into |->
+    x q[3];
+    h q[3];
+
+    // Superpose inputs
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Oracle: s = 101, one CNOT per 1-bit
+    cx q[0], q[3];
+    cx q[2], q[3];
+    barrier q;
+
+    // Interfere and measure inputs only
+    h q[0];
+    h q[1];
+    h q[2];
+    measure q[0] -> c[0];
+    measure q[1] -> c[1];
+    measure q[2] -> c[2];
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[4] q;
+    bit[3] c;
+
+    // Ancilla into |->
+    x q[3];
+    h q[3];
+
+    // Superpose inputs
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Oracle: s = 101
+    cx q[0], q[3];
+    cx q[2], q[3];
+    barrier q;
+
+    // Interfere and measure inputs only
+    h q[0];
+    h q[1];
+    h q[2];
+    c[0] = measure q[0];
+    c[1] = measure q[1];
+    c[2] = measure q[2];
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(4, 3)
+
+    # Ancilla into |->
+    qc.x(3)
+    qc.h(3)
+
+    # Superpose inputs
+    qc.h(range(3))
+    qc.barrier()
+
+    # Oracle: s = 101
+    qc.cx(0, 3)
+    qc.cx(2, 3)
+    qc.barrier()
+
+    # Interfere and measure inputs only
+    qc.h(range(3))
+    qc.measure(range(3), range(3))
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+
+    q = cirq.LineQubit.range(4)
+
+    circuit = cirq.Circuit()
+    # Ancilla into |->
+    circuit.append(cirq.X(q[3]))
+    circuit.append(cirq.H(q[3]))
+
+    # Superpose inputs
+    circuit.append([cirq.H(q[i]) for i in range(3)])
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Oracle: s = 101
+    circuit.append(cirq.CNOT(q[0], q[3]))
+    circuit.append(cirq.CNOT(q[2], q[3]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Interfere and measure inputs only
+    circuit.append([cirq.H(q[i]) for i in range(3)])
+    circuit.append(cirq.measure(q[0], q[1], q[2], key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[4];
+            mutable c = [Zero, size = 3];
+
+            // Ancilla into |->
+            X(q[3]);
+            H(q[3]);
+
+            // Superpose inputs
+            H(q[0]);
+            H(q[1]);
+            H(q[2]);
+
+            // Oracle: s = 101
+            CNOT(q[0], q[3]);
+            CNOT(q[2], q[3]);
+
+            // Interfere and measure inputs only
+            H(q[0]);
+            H(q[1]);
+            H(q[2]);
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+            set c w/= 2 <- M(q[2]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python

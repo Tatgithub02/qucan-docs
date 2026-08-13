@@ -38,7 +38,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
     \( \tfrac{1}{\sqrt{2}}(|00\rangle + |11\rangle) \)
 
-    === "OpenQASM"
+    === "OpenQASM 2.0"
 
         ```qasm
         OPENQASM 2.0;
@@ -46,6 +46,19 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
         qreg q[3];
         creg c[3];
+
+        h q[0];
+        cx q[0], q[1];
+        ```
+
+    === "OpenQASM 3.0"
+
+        ```qasm
+        OPENQASM 3.0;
+        include "stdgates.inc";
+
+        qubit[3] q;
+        bit[3] c;
 
         h q[0];
         cx q[0], q[1];
@@ -108,7 +121,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
     \( \tfrac{1}{\sqrt{2}}(|00\rangle - |11\rangle) \)
 
-    === "OpenQASM"
+    === "OpenQASM 2.0"
 
         ```qasm
         OPENQASM 2.0;
@@ -116,6 +129,20 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
         qreg q[3];
         creg c[3];
+
+        x q[0];
+        h q[0];
+        cx q[0], q[1];
+        ```
+
+    === "OpenQASM 3.0"
+
+        ```qasm
+        OPENQASM 3.0;
+        include "stdgates.inc";
+
+        qubit[3] q;
+        bit[3] c;
 
         x q[0];
         h q[0];
@@ -182,7 +209,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
     \( \tfrac{1}{\sqrt{2}}(|01\rangle + |10\rangle) \)
 
-    === "OpenQASM"
+    === "OpenQASM 2.0"
 
         ```qasm
         OPENQASM 2.0;
@@ -190,6 +217,20 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
         qreg q[3];
         creg c[3];
+
+        x q[1];
+        h q[0];
+        cx q[0], q[1];
+        ```
+
+    === "OpenQASM 3.0"
+
+        ```qasm
+        OPENQASM 3.0;
+        include "stdgates.inc";
+
+        qubit[3] q;
+        bit[3] c;
 
         x q[1];
         h q[0];
@@ -256,7 +297,7 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
     \( \tfrac{1}{\sqrt{2}}(|01\rangle - |10\rangle) \)
 
-    === "OpenQASM"
+    === "OpenQASM 2.0"
 
         ```qasm
         OPENQASM 2.0;
@@ -264,6 +305,21 @@ See [Build your circuit with code](../tour/code/openqasm.md) for why parentheses
 
         qreg q[3];
         creg c[3];
+
+        x q[0];
+        x q[1];
+        h q[0];
+        cx q[0], q[1];
+        ```
+
+    === "OpenQASM 3.0"
+
+        ```qasm
+        OPENQASM 3.0;
+        include "stdgates.inc";
+
+        qubit[3] q;
+        bit[3] c;
 
         x q[0];
         x q[1];

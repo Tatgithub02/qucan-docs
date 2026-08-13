@@ -86,6 +86,140 @@ Build it in three blocks on a 2-qubit circuit (or load it from the [Ready algori
 
 Good external references for the circuit layout: [Wikipedia: Superdense coding](https://en.wikipedia.org/wiki/Superdense_coding) and [IBM Quantum Learning: Entanglement in action](https://learning.quantum.ibm.com/course/basics-of-quantum-information/entanglement-in-action).
 
+## The circuit in code
+
+The message-`11` circuit in all five supported languages. [Barriers](../gates/barrier.md) mark the three phases of the protocol (entangle, encode, decode) as vertical lines on the circuit diagram; they don't affect the quantum state or the output.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[2];
+    creg c[2];
+
+    // Entangle
+    h q[0];
+    cx q[0], q[1];
+    barrier q;
+
+    // Alice encodes 11: X then Z on q[0]
+    x q[0];
+    z q[0];
+    barrier q;
+
+    // Bob decodes
+    cx q[0], q[1];
+    h q[0];
+    measure q -> c;
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[2] q;
+    bit[2] c;
+
+    // Entangle
+    h q[0];
+    cx q[0], q[1];
+    barrier q;
+
+    // Alice encodes 11: X then Z on q[0]
+    x q[0];
+    z q[0];
+    barrier q;
+
+    // Bob decodes
+    cx q[0], q[1];
+    h q[0];
+    c = measure q;
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from qiskit import QuantumCircuit
+
+    qc = QuantumCircuit(2, 2)
+
+    # Entangle
+    qc.h(0)
+    qc.cx(0, 1)
+    qc.barrier()
+
+    # Alice encodes 11: X then Z on q0
+    qc.x(0)
+    qc.z(0)
+    qc.barrier()
+
+    # Bob decodes
+    qc.cx(0, 1)
+    qc.h(0)
+    qc.measure([0, 1], [0, 1])
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+
+    q = cirq.LineQubit.range(2)
+
+    circuit = cirq.Circuit()
+    # Entangle
+    circuit.append(cirq.H(q[0]))
+    circuit.append(cirq.CNOT(q[0], q[1]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Alice encodes 11: X then Z on q0
+    circuit.append(cirq.X(q[0]))
+    circuit.append(cirq.Z(q[0]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Bob decodes
+    circuit.append(cirq.CNOT(q[0], q[1]))
+    circuit.append(cirq.H(q[0]))
+    circuit.append(cirq.measure(*q, key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[2];
+            mutable c = [Zero, size = 2];
+
+            // Entangle
+            H(q[0]);
+            CNOT(q[0], q[1]);
+
+            // Alice encodes 11: X then Z on q0
+            X(q[0]);
+            Z(q[0]);
+
+            // Bob decodes
+            CNOT(q[0], q[1]);
+            H(q[0]);
+
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 Here's the full protocol for message `11` in standard Qiskit (runnable outside Qompile):

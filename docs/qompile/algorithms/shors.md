@@ -112,6 +112,238 @@ This is the biggest build in this section: 7 qubits, with `q[0]`-`q[2]` counting
 
 References for the circuit layout: [Wikipedia: Shor's algorithm](https://en.wikipedia.org/wiki/Shor%27s_algorithm) and [IBM Quantum Learning: Phase estimation and factoring](https://learning.quantum.ibm.com/course/fundamentals-of-quantum-algorithms/phase-estimation-and-factoring).
 
+## The circuit in code
+
+The factor-15 circuit (\( a = 7 \), 3 counting + 4 work qubits) in all five supported languages. The controlled multiplications are expanded into [SWAP](../gates/swap.md) and [CNOT](../gates/cnot.md) gates. [Barriers](../gates/barrier.md) separate the phases: setup, controlled \( \times7 \), controlled \( \times4 \), inverse QFT, and measurement.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[7];
+    creg c[3];
+
+    // Superpose counting register
+    h q[0];
+    h q[1];
+    h q[2];
+
+    // Work register = 1
+    x q[3];
+    barrier q;
+
+    // Controlled x7 mod 15, controlled by q[0]
+    // x7 = x8 (rotate bits) then negate mod 15
+    cswap q[0], q[3], q[4];
+    cswap q[0], q[4], q[5];
+    cswap q[0], q[5], q[6];
+    cx q[0], q[3];
+    cx q[0], q[4];
+    cx q[0], q[5];
+    cx q[0], q[6];
+    barrier q;
+
+    // Controlled x4 mod 15, controlled by q[1]
+    cswap q[1], q[4], q[6];
+    cswap q[1], q[3], q[5];
+    barrier q;
+
+    // q[2] controls x1 = identity, no gates needed
+
+    // Inverse QFT on counting register
+    swap q[0], q[2];
+    h q[0];
+    cp(-pi/2) q[0], q[1];
+    h q[1];
+    cp(-pi/4) q[0], q[2];
+    cp(-pi/2) q[1], q[2];
+    h q[2];
+
+    measure q[0] -> c[0];
+    measure q[1] -> c[1];
+    measure q[2] -> c[2];
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[7] q;
+    bit[3] c;
+
+    // Superpose counting register
+    h q[0];
+    h q[1];
+    h q[2];
+
+    // Work register = 1
+    x q[3];
+    barrier q;
+
+    // Controlled x7 mod 15, controlled by q[0]
+    cswap q[0], q[3], q[4];
+    cswap q[0], q[4], q[5];
+    cswap q[0], q[5], q[6];
+    cx q[0], q[3];
+    cx q[0], q[4];
+    cx q[0], q[5];
+    cx q[0], q[6];
+    barrier q;
+
+    // Controlled x4 mod 15, controlled by q[1]
+    cswap q[1], q[4], q[6];
+    cswap q[1], q[3], q[5];
+    barrier q;
+
+    // Inverse QFT on counting register
+    swap q[0], q[2];
+    h q[0];
+    cp(-pi/2) q[0], q[1];
+    h q[1];
+    cp(-pi/4) q[0], q[2];
+    cp(-pi/2) q[1], q[2];
+    h q[2];
+
+    c[0] = measure q[0];
+    c[1] = measure q[1];
+    c[2] = measure q[2];
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from math import pi
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import QFT
+
+    qc = QuantumCircuit(7, 3)
+
+    # Superpose counting register
+    qc.h(range(3))
+    # Work register = 1
+    qc.x(3)
+    qc.barrier()
+
+    # Controlled x7 mod 15, controlled by q[0]
+    qc.cswap(0, 3, 4)
+    qc.cswap(0, 4, 5)
+    qc.cswap(0, 5, 6)
+    qc.cx(0, 3)
+    qc.cx(0, 4)
+    qc.cx(0, 5)
+    qc.cx(0, 6)
+    qc.barrier()
+
+    # Controlled x4 mod 15, controlled by q[1]
+    qc.cswap(1, 4, 6)
+    qc.cswap(1, 3, 5)
+    qc.barrier()
+
+    # Inverse QFT on counting register
+    qc.append(QFT(3, inverse=True), range(3))
+
+    qc.measure(range(3), range(3))
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+    import numpy as np
+
+    q = cirq.LineQubit.range(7)
+
+    circuit = cirq.Circuit()
+    # Superpose counting register
+    circuit.append([cirq.H(q[i]) for i in range(3)])
+    # Work register = 1
+    circuit.append(cirq.X(q[3]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Controlled x7 mod 15, controlled by q[0]
+    circuit.append(cirq.CSWAP(q[0], q[3], q[4]))
+    circuit.append(cirq.CSWAP(q[0], q[4], q[5]))
+    circuit.append(cirq.CSWAP(q[0], q[5], q[6]))
+    circuit.append(cirq.CNOT(q[0], q[3]))
+    circuit.append(cirq.CNOT(q[0], q[4]))
+    circuit.append(cirq.CNOT(q[0], q[5]))
+    circuit.append(cirq.CNOT(q[0], q[6]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Controlled x4 mod 15, controlled by q[1]
+    circuit.append(cirq.CSWAP(q[1], q[4], q[6]))
+    circuit.append(cirq.CSWAP(q[1], q[3], q[5]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Inverse QFT on counting register (hand-built for 3 qubits)
+    circuit.append(cirq.SWAP(q[0], q[2]))
+    circuit.append(cirq.H(q[0]))
+    circuit.append(cirq.CZPowGate(exponent=-0.5).on(q[0], q[1]))
+    circuit.append(cirq.H(q[1]))
+    circuit.append(cirq.CZPowGate(exponent=-0.25).on(q[0], q[2]))
+    circuit.append(cirq.CZPowGate(exponent=-0.5).on(q[1], q[2]))
+    circuit.append(cirq.H(q[2]))
+
+    circuit.append(cirq.measure(q[0], q[1], q[2], key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+        open Microsoft.Quantum.Math;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[7];
+            mutable c = [Zero, size = 3];
+
+            // Superpose counting register
+            H(q[0]);
+            H(q[1]);
+            H(q[2]);
+
+            // Work register = 1
+            X(q[3]);
+
+            // Controlled x7 mod 15, controlled by q[0]
+            Controlled SWAP([q[0]], (q[3], q[4]));
+            Controlled SWAP([q[0]], (q[4], q[5]));
+            Controlled SWAP([q[0]], (q[5], q[6]));
+            CNOT(q[0], q[3]);
+            CNOT(q[0], q[4]);
+            CNOT(q[0], q[5]);
+            CNOT(q[0], q[6]);
+
+            // Controlled x4 mod 15, controlled by q[1]
+            Controlled SWAP([q[1]], (q[4], q[6]));
+            Controlled SWAP([q[1]], (q[3], q[5]));
+
+            // Inverse QFT on counting register
+            SWAP(q[0], q[2]);
+            H(q[0]);
+            Controlled R1([q[0]], (-PI() / 2.0, q[1]));
+            H(q[1]);
+            Controlled R1([q[0]], (-PI() / 4.0, q[2]));
+            Controlled R1([q[1]], (-PI() / 2.0, q[2]));
+            H(q[2]);
+
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+            set c w/= 2 <- M(q[2]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python

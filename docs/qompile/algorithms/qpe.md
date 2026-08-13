@@ -72,6 +72,192 @@ Build on 4 qubits: `q[0]`-`q[2]` counting, `q[3]` the eigenstate. Controlled-T p
 
 References for the circuit layout: [Wikipedia: Quantum phase estimation algorithm](https://en.wikipedia.org/wiki/Quantum_phase_estimation_algorithm) and [IBM Quantum Learning: Phase estimation and factoring](https://learning.quantum.ibm.com/course/fundamentals-of-quantum-algorithms/phase-estimation-and-factoring).
 
+## The circuit in code
+
+The T-gate QPE circuit (\( t = 3 \) counting qubits, 1 target, \( \varphi = 1/8 \)) in all five supported languages. [Barriers](../gates/barrier.md) separate the three phases: eigenstate + superposition, controlled phase kicks, and inverse QFT + measurement.
+
+=== "OpenQASM 2.0"
+
+    ```qasm
+    OPENQASM 2.0;
+    include "qelib1.inc";
+
+    qreg q[4];
+    creg c[3];
+
+    // Eigenstate |1> on the target
+    x q[3];
+
+    // Superpose counting register
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Controlled powers of T = P(pi/4)
+    cp(pi/4) q[0], q[3];    // T^1
+    cp(pi/2) q[1], q[3];    // T^2
+    cp(pi) q[2], q[3];      // T^4
+    barrier q;
+
+    // Inverse QFT on counting register
+    swap q[0], q[2];
+    h q[0];
+    cp(-pi/2) q[0], q[1];
+    h q[1];
+    cp(-pi/4) q[0], q[2];
+    cp(-pi/2) q[1], q[2];
+    h q[2];
+
+    measure q[0] -> c[0];
+    measure q[1] -> c[1];
+    measure q[2] -> c[2];
+    ```
+
+=== "OpenQASM 3.0"
+
+    ```qasm
+    OPENQASM 3.0;
+    include "stdgates.inc";
+
+    qubit[4] q;
+    bit[3] c;
+
+    // Eigenstate |1> on the target
+    x q[3];
+
+    // Superpose counting register
+    h q[0];
+    h q[1];
+    h q[2];
+    barrier q;
+
+    // Controlled powers of T = P(pi/4)
+    cp(pi/4) q[0], q[3];
+    cp(pi/2) q[1], q[3];
+    cp(pi) q[2], q[3];
+    barrier q;
+
+    // Inverse QFT on counting register
+    swap q[0], q[2];
+    h q[0];
+    cp(-pi/2) q[0], q[1];
+    h q[1];
+    cp(-pi/4) q[0], q[2];
+    cp(-pi/2) q[1], q[2];
+    h q[2];
+
+    c[0] = measure q[0];
+    c[1] = measure q[1];
+    c[2] = measure q[2];
+    ```
+
+=== "Qiskit"
+
+    ```python
+    from math import pi
+    from qiskit import QuantumCircuit
+    from qiskit.circuit.library import QFT
+
+    qc = QuantumCircuit(4, 3)
+
+    # Eigenstate |1> on the target
+    qc.x(3)
+
+    # Superpose counting register
+    qc.h(range(3))
+    qc.barrier()
+
+    # Controlled powers of T = P(pi/4)
+    for j in range(3):
+        qc.cp(pi / 4 * 2**j, j, 3)
+    qc.barrier()
+
+    # Inverse QFT on counting register
+    qc.append(QFT(3, inverse=True), range(3))
+
+    qc.measure(range(3), range(3))
+    ```
+
+=== "Cirq"
+
+    ```python
+    import cirq
+    import numpy as np
+
+    q = cirq.LineQubit.range(4)
+
+    circuit = cirq.Circuit()
+    # Eigenstate |1> on the target
+    circuit.append(cirq.X(q[3]))
+
+    # Superpose counting register
+    circuit.append([cirq.H(q[i]) for i in range(3)])
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Controlled powers of T = P(pi/4)
+    for j in range(3):
+        angle = np.pi / 4 * 2**j
+        circuit.append(cirq.CZPowGate(exponent=angle / np.pi).on(q[j], q[3]))
+    circuit.append(cirq.ops.Moment())  # barrier
+
+    # Inverse QFT on counting register (hand-built for 3 qubits)
+    circuit.append(cirq.SWAP(q[0], q[2]))
+    circuit.append(cirq.H(q[0]))
+    circuit.append(cirq.CZPowGate(exponent=-0.5).on(q[0], q[1]))
+    circuit.append(cirq.H(q[1]))
+    circuit.append(cirq.CZPowGate(exponent=-0.25).on(q[0], q[2]))
+    circuit.append(cirq.CZPowGate(exponent=-0.5).on(q[1], q[2]))
+    circuit.append(cirq.H(q[2]))
+
+    circuit.append(cirq.measure(q[0], q[1], q[2], key='result'))
+    print(circuit)
+    ```
+
+=== "Q#"
+
+    ```qsharp
+    namespace QompileCircuit {
+        open Microsoft.Quantum.Canon;
+        open Microsoft.Quantum.Intrinsic;
+        open Microsoft.Quantum.Math;
+
+        operation Circuit() : Result[] {
+            use q = Qubit[4];
+            mutable c = [Zero, size = 3];
+
+            // Eigenstate |1> on the target
+            X(q[3]);
+
+            // Superpose counting register
+            H(q[0]);
+            H(q[1]);
+            H(q[2]);
+
+            // Controlled powers of T = P(pi/4)
+            Controlled R1([q[0]], (PI() / 4.0, q[3]));
+            Controlled R1([q[1]], (PI() / 2.0, q[3]));
+            Controlled R1([q[2]], (PI(), q[3]));
+
+            // Inverse QFT on counting register
+            SWAP(q[0], q[2]);
+            H(q[0]);
+            Controlled R1([q[0]], (-PI() / 2.0, q[1]));
+            H(q[1]);
+            Controlled R1([q[0]], (-PI() / 4.0, q[2]));
+            Controlled R1([q[1]], (-PI() / 2.0, q[2]));
+            H(q[2]);
+
+            set c w/= 0 <- M(q[0]);
+            set c w/= 1 <- M(q[1]);
+            set c w/= 2 <- M(q[2]);
+
+            ResetAll(q);
+            return c;
+        }
+    }
+    ```
+
 ## The Qiskit code
 
 ```python
